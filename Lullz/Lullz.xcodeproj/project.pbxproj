@@ -1,0 +1,584 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		348F4A3E2D73F4940076DD28 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 348F4A212D73F4920076DD28 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 348F4A282D73F4920076DD28;
+			remoteInfo = Lullz;
+		};
+		348F4A482D73F4940076DD28 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 348F4A212D73F4920076DD28 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 348F4A282D73F4920076DD28;
+			remoteInfo = Lullz;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		348F4A292D73F4920076DD28 /* Lullz.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lullz.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		348F4A3D2D73F4940076DD28 /* LullzTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LullzTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		348F4A472D73F4940076DD28 /* LullzUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LullzUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		348F4A4F2D73F4940076DD28 /* Exceptions for "Lullz" folder in "Lullz" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 348F4A282D73F4920076DD28 /* Lullz */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		348F4A2B2D73F4920076DD28 /* Lullz */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				348F4A4F2D73F4940076DD28 /* Exceptions for "Lullz" folder in "Lullz" target */,
+			);
+			path = Lullz;
+			sourceTree = "<group>";
+		};
+		348F4A402D73F4940076DD28 /* LullzTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LullzTests;
+			sourceTree = "<group>";
+		};
+		348F4A4A2D73F4940076DD28 /* LullzUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LullzUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		348F4A262D73F4920076DD28 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		348F4A3A2D73F4940076DD28 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		348F4A442D73F4940076DD28 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		348F4A202D73F4920076DD28 = {
+			isa = PBXGroup;
+			children = (
+				348F4A2B2D73F4920076DD28 /* Lullz */,
+				348F4A402D73F4940076DD28 /* LullzTests */,
+				348F4A4A2D73F4940076DD28 /* LullzUITests */,
+				348F4A2A2D73F4920076DD28 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		348F4A2A2D73F4920076DD28 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				348F4A292D73F4920076DD28 /* Lullz.app */,
+				348F4A3D2D73F4940076DD28 /* LullzTests.xctest */,
+				348F4A472D73F4940076DD28 /* LullzUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		348F4A282D73F4920076DD28 /* Lullz */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 348F4A502D73F4940076DD28 /* Build configuration list for PBXNativeTarget "Lullz" */;
+			buildPhases = (
+				348F4A252D73F4920076DD28 /* Sources */,
+				348F4A262D73F4920076DD28 /* Frameworks */,
+				348F4A272D73F4920076DD28 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				348F4A2B2D73F4920076DD28 /* Lullz */,
+			);
+			name = Lullz;
+			packageProductDependencies = (
+			);
+			productName = Lullz;
+			productReference = 348F4A292D73F4920076DD28 /* Lullz.app */;
+			productType = "com.apple.product-type.application";
+		};
+		348F4A3C2D73F4940076DD28 /* LullzTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 348F4A552D73F4940076DD28 /* Build configuration list for PBXNativeTarget "LullzTests" */;
+			buildPhases = (
+				348F4A392D73F4940076DD28 /* Sources */,
+				348F4A3A2D73F4940076DD28 /* Frameworks */,
+				348F4A3B2D73F4940076DD28 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				348F4A3F2D73F4940076DD28 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				348F4A402D73F4940076DD28 /* LullzTests */,
+			);
+			name = LullzTests;
+			packageProductDependencies = (
+			);
+			productName = LullzTests;
+			productReference = 348F4A3D2D73F4940076DD28 /* LullzTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		348F4A462D73F4940076DD28 /* LullzUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 348F4A582D73F4940076DD28 /* Build configuration list for PBXNativeTarget "LullzUITests" */;
+			buildPhases = (
+				348F4A432D73F4940076DD28 /* Sources */,
+				348F4A442D73F4940076DD28 /* Frameworks */,
+				348F4A452D73F4940076DD28 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				348F4A492D73F4940076DD28 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				348F4A4A2D73F4940076DD28 /* LullzUITests */,
+			);
+			name = LullzUITests;
+			packageProductDependencies = (
+			);
+			productName = LullzUITests;
+			productReference = 348F4A472D73F4940076DD28 /* LullzUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		348F4A212D73F4920076DD28 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1620;
+				LastUpgradeCheck = 1620;
+				TargetAttributes = {
+					348F4A282D73F4920076DD28 = {
+						CreatedOnToolsVersion = 16.2;
+					};
+					348F4A3C2D73F4940076DD28 = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = 348F4A282D73F4920076DD28;
+					};
+					348F4A462D73F4940076DD28 = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = 348F4A282D73F4920076DD28;
+					};
+				};
+			};
+			buildConfigurationList = 348F4A242D73F4920076DD28 /* Build configuration list for PBXProject "Lullz" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 348F4A202D73F4920076DD28;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 348F4A2A2D73F4920076DD28 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				348F4A282D73F4920076DD28 /* Lullz */,
+				348F4A3C2D73F4940076DD28 /* LullzTests */,
+				348F4A462D73F4940076DD28 /* LullzUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		348F4A272D73F4920076DD28 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		348F4A3B2D73F4940076DD28 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		348F4A452D73F4940076DD28 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		348F4A252D73F4920076DD28 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		348F4A392D73F4940076DD28 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		348F4A432D73F4940076DD28 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		348F4A3F2D73F4940076DD28 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 348F4A282D73F4920076DD28 /* Lullz */;
+			targetProxy = 348F4A3E2D73F4940076DD28 /* PBXContainerItemProxy */;
+		};
+		348F4A492D73F4940076DD28 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 348F4A282D73F4920076DD28 /* Lullz */;
+			targetProxy = 348F4A482D73F4940076DD28 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		348F4A512D73F4940076DD28 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Lullz/Lullz.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Lullz/Preview Content\"";
+				DEVELOPMENT_TEAM = 6NS4XM2L7B;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Lullz/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Lullz;
+				INFOPLIST_KEY_NSHomeKitUsageDescription = "Lullz uses HomeKit to control smart home devices like lights and thermostats to enhance your relaxation experience.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.hometune.lullz.Lullz;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		348F4A522D73F4940076DD28 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Lullz/Lullz.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Lullz/Preview Content\"";
+				DEVELOPMENT_TEAM = 6NS4XM2L7B;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Lullz/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Lullz;
+				INFOPLIST_KEY_NSHomeKitUsageDescription = "Lullz uses HomeKit to control smart home devices like lights and thermostats to enhance your relaxation experience.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.hometune.lullz.Lullz;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		348F4A532D73F4940076DD28 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		348F4A542D73F4940076DD28 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		348F4A562D73F4940076DD28 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.hometune.lullz.LullzTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Lullz.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Lullz";
+			};
+			name = Debug;
+		};
+		348F4A572D73F4940076DD28 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.hometune.lullz.LullzTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Lullz.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Lullz";
+			};
+			name = Release;
+		};
+		348F4A592D73F4940076DD28 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.hometune.lullz.LullzUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Lullz;
+			};
+			name = Debug;
+		};
+		348F4A5A2D73F4940076DD28 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.hometune.lullz.LullzUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Lullz;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		348F4A242D73F4920076DD28 /* Build configuration list for PBXProject "Lullz" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				348F4A532D73F4940076DD28 /* Debug */,
+				348F4A542D73F4940076DD28 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		348F4A502D73F4940076DD28 /* Build configuration list for PBXNativeTarget "Lullz" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				348F4A512D73F4940076DD28 /* Debug */,
+				348F4A522D73F4940076DD28 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		348F4A552D73F4940076DD28 /* Build configuration list for PBXNativeTarget "LullzTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				348F4A562D73F4940076DD28 /* Debug */,
+				348F4A572D73F4940076DD28 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		348F4A582D73F4940076DD28 /* Build configuration list for PBXNativeTarget "LullzUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				348F4A592D73F4940076DD28 /* Debug */,
+				348F4A5A2D73F4940076DD28 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 348F4A212D73F4920076DD28 /* Project object */;
+}

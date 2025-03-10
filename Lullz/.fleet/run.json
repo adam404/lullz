@@ -1,0 +1,15 @@
+{
+    "configurations": [
+        {
+            "name": "Lullz (1)",
+            "type": "xcode-app",
+            "workingDir": "$PROJECT_DIR$",
+            "allowParallelRun": true,
+            "buildTarget": {
+                "project": "Lullz",
+                "target": "Lullz"
+            },
+            "configuration": "Release"
+        }
+    ]
+}

@@ -1,0 +1,5 @@
+{
+    "toolchains": [],
+    "editor.formatOnSave": true,
+    "xcodebuild.credentials.provider": "System"
+}

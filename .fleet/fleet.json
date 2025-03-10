@@ -1,0 +1,30 @@
+{
+    "env": {
+        "DEVELOPER_DIR": "/Applications/Xcode.app/Contents/Developer",
+        "SDKROOT": "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.3.1.sdk"
+    },
+    "tools": {
+        "xcode-select": {
+            "version": "latest"
+        },
+        "xcrun": {
+            "version": "latest"
+        }
+    },
+    "xcode": {
+        "version": "latest",
+        "simulators": [
+            "iOS 17.5 (21F79)",
+            "iOS 18.3.1 (22D8075)"
+        ]
+    },
+    "commands": {
+        "fix-xcode-sdk": [
+            "sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer",
+            "xcodebuild -downloadPlatform iOS"
+        ],
+        "list-simulators": [
+            "xcrun simctl list"
+        ]
+    }
+}
