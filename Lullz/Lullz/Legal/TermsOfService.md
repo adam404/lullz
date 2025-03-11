@@ -6,17 +6,20 @@ Effective Date: March 1, 2025
 
 By downloading, installing, or using the Lullz mobile application ("App"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the App.
 
-## 2. DESCRIPTION OF SERVICE
+## 2. ENTERTAINMENT PURPOSE ONLY
 
-Lullz is a mobile application that provides sound generation, binaural beats, breathing exercises, and related features designed to assist with relaxation, focus, and sleep.
+Lullz is a mobile application provided solely for entertainment purposes. The App provides sound generation, binaural beats, breathing exercises, and related features intended exclusively for entertainment and relaxation. The App is not intended to diagnose, treat, cure, or prevent any disease or health condition. Any claims or testimonials regarding benefits beyond entertainment should not be interpreted as medical or health advice.
 
 ## 3. USE OF THE APP
 
 ### 3.1 License Grant
+
 Subject to your compliance with these Terms, we grant you a limited, non-exclusive, non-transferable, non-sublicensable license to download and use the App for your personal, non-commercial purposes.
 
 ### 3.2 Restrictions
+
 You agree not to:
+
 - Use the App for any illegal purpose or in violation of any local, state, national, or international law
 - Reverse engineer, decompile, disassemble, or attempt to derive the source code of the App
 - Remove or alter any copyright, trademark, or other proprietary notices
@@ -24,6 +27,7 @@ You agree not to:
 - Use the App while operating a motor vehicle or during activities requiring full attention
 
 ### 3.3 Updates and Changes
+
 We may update the App from time to time to add new features or fix bugs. These Terms will apply to all updates unless an update is accompanied by separate terms.
 
 ## 4. DISCLAIMER OF WARRANTIES
@@ -34,13 +38,15 @@ WE DO NOT WARRANT THAT THE APP WILL FUNCTION WITHOUT ERROR OR INTERRUPTION, OR T
 
 ## 5. LIMITATION OF LIABILITY
 
-TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT WILL WE BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING WITHOUT LIMITATION, LOSS OF PROFITS, DATA LOSS, BUSINESS LOSS, OR ANY OTHER LOSS OR DAMAGE, ARISING OUT OF OR RELATED TO YOUR USE OF OR INABILITY TO USE THE APP.
+TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT WILL WE BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING WITHOUT LIMITATION, LOSS OF PROFITS, DATA LOSS, BUSINESS LOSS, PERSONAL INJURY, OR ANY OTHER LOSS OR DAMAGE, ARISING OUT OF OR RELATED TO YOUR USE OF OR INABILITY TO USE THE APP.
+
+THE CREATORS, DEVELOPERS, AND DISTRIBUTORS OF LULLZ ASSUME NO LIABILITY WHATSOEVER FOR ANY CLAIMS, DAMAGES, OR LOSSES RESULTING FROM YOUR USE OF THE APPLICATION OR ANY INFORMATION CONTAINED THEREIN.
 
 OUR TOTAL LIABILITY FOR ANY CLAIMS ARISING FROM OR RELATING TO THESE TERMS OR THE APP IS LIMITED TO THE AMOUNT YOU PAID FOR THE APP (IF ANY) IN THE PAST SIX MONTHS.
 
 ## 6. HEALTH DISCLAIMER
 
-THE APP IS NOT INTENDED TO PROVIDE MEDICAL ADVICE OR TREATMENT. THE CONTENT AND FEATURES PROVIDED THROUGH THE APP ARE FOR INFORMATIONAL PURPOSES ONLY AND ARE NOT INTENDED TO DIAGNOSE, TREAT, CURE, OR PREVENT ANY DISEASE OR HEALTH CONDITION.
+THE APP IS NOT INTENDED TO PROVIDE MEDICAL ADVICE OR TREATMENT. THE CONTENT AND FEATURES PROVIDED THROUGH THE APP ARE FOR ENTERTAINMENT PURPOSES ONLY AND ARE NOT INTENDED TO DIAGNOSE, TREAT, CURE, OR PREVENT ANY DISEASE OR HEALTH CONDITION.
 
 ALWAYS CONSULT WITH A QUALIFIED HEALTHCARE PROFESSIONAL BEFORE USING THE APP IF YOU HAVE ANY MEDICAL CONDITION, INCLUDING BUT NOT LIMITED TO EPILEPSY, HEART CONDITIONS, OR MENTAL HEALTH DISORDERS.
 
@@ -63,4 +69,4 @@ We reserve the right to modify these Terms at any time. If we make changes, we w
 ## 11. CONTACT US
 
 If you have any questions about these Terms, please contact us at:
-support@lullzapp.com 
+support@lullzapp.com

@@ -42,15 +42,12 @@ class SoundVisualizer: ObservableObject {
     deinit {
         vDSP_destroy_fftsetup(fftSetup)
         
-        // Use try-catch to safely remove the tap
-        do {
-            // Try bus 1 first, then bus 0
-            if audioEngine.mainMixerNode.numberOfOutputs > 1 {
-                audioEngine.mainMixerNode.removeTap(onBus: 1)
-            }
+        // Safely remove taps without using try-catch
+        if audioEngine.inputConnectionPoint(for: audioEngine.mainMixerNode, inputBus: 1) != nil {
+            audioEngine.mainMixerNode.removeTap(onBus: 1)
+        }
+        if audioEngine.inputConnectionPoint(for: audioEngine.mainMixerNode, inputBus: 0) != nil {
             audioEngine.mainMixerNode.removeTap(onBus: 0)
-        } catch {
-            print("Error removing audio tap: \(error.localizedDescription)")
         }
     }
     
@@ -84,47 +81,64 @@ class SoundVisualizer: ObservableObject {
         // Create a local array to hold the audio data
         var realp = [Float](repeating: 0, count: halfN)
         var imagp = [Float](repeating: 0, count: halfN)
-        var output = DSPSplitComplex(realp: &realp, imagp: &imagp)
         
-        // Load audio samples into buffer
-        audioBuffer = Array(UnsafeBufferPointer(start: data, count: Int(frameLength)))
-        
-        // If buffer is smaller than expected, pad with zeros
-        if audioBuffer.count < n {
-            audioBuffer.append(contentsOf: [Float](repeating: 0, count: n - audioBuffer.count))
-        }
-        
-        // Apply Hanning window to reduce spectral leakage
-        var window = [Float](repeating: 0, count: n)
-        vDSP_hann_window(&window, vDSP_Length(n), Int32(vDSP_HANN_NORM))
-        vDSP_vmul(audioBuffer, 1, window, 1, &audioBuffer, 1, vDSP_Length(n))
-        
-        // Convert real audio data to split complex form for FFT
-        vDSP_ctoz(UnsafeRawPointer(audioBuffer).assumingMemoryBound(to: DSPComplex.self), 2, &output, 1, vDSP_Length(halfN))
-        
-        // Perform forward FFT
-        vDSP_fft_zrip(fftSetup, &output, 1, vDSP_Length(log2n), FFTDirection(FFT_FORWARD))
-        
-        // Calculate magnitude
-        var magnitudes = [Float](repeating: 0, count: halfN)
-        vDSP_zvmags(&output, 1, &magnitudes, 1, vDSP_Length(halfN))
-        
-        // Normalize and convert to dB
-        var normalizedMagnitudes = [Float](repeating: 0, count: halfN)
-        var scalingFactor = Float(1.0 / Double(n))
-        vDSP_vsmul(magnitudes, 1, &scalingFactor, &normalizedMagnitudes, 1, vDSP_Length(halfN))
-        
-        // Convert to dB
-        for i in 0..<halfN {
-            normalizedMagnitudes[i] = 10.0 * log10f(normalizedMagnitudes[i] + 1e-6)
-        }
-        
-        // Set amplitudes with some smoothing
-        DispatchQueue.main.async {
-            for i in 0..<self.halfN {
-                // Add some smoothing to avoid too rapid changes
-                let smoothingFactor: Float = 0.2
-                self.amplitudes[i] = self.amplitudes[i] * (1 - smoothingFactor) + normalizedMagnitudes[i] * smoothingFactor
+        // Use withUnsafeMutablePointer to get stable pointers
+        realp.withUnsafeMutableBufferPointer { realPtr in
+            imagp.withUnsafeMutableBufferPointer { imagPtr in
+                // Create split complex with stable pointers
+                var output = DSPSplitComplex(
+                    realp: realPtr.baseAddress!,
+                    imagp: imagPtr.baseAddress!
+                )
+                
+                // Load audio samples into buffer
+                audioBuffer = Array(UnsafeBufferPointer(start: data, count: Int(frameLength)))
+                
+                // If buffer is smaller than expected, pad with zeros
+                if audioBuffer.count < n {
+                    audioBuffer.append(contentsOf: [Float](repeating: 0, count: n - audioBuffer.count))
+                }
+                
+                // Apply Hanning window to reduce spectral leakage
+                var window = [Float](repeating: 0, count: n)
+                vDSP_hann_window(&window, vDSP_Length(n), Int32(vDSP_HANN_NORM))
+                vDSP_vmul(audioBuffer, 1, window, 1, &audioBuffer, 1, vDSP_Length(n))
+                
+                // Create a copy of audioBuffer to avoid in-place manipulation
+                let bufferCopy = audioBuffer
+                
+                // Convert real audio data to split complex form for FFT
+                bufferCopy.withUnsafeBytes { bufferPtr in
+                    // Get a pointer to the underlying data as DSPComplex
+                    let complexPtr = bufferPtr.baseAddress!.assumingMemoryBound(to: DSPComplex.self)
+                    vDSP_ctoz(complexPtr, 2, &output, 1, vDSP_Length(halfN))
+                }
+                
+                // Perform forward FFT
+                vDSP_fft_zrip(fftSetup, &output, 1, vDSP_Length(log2n), FFTDirection(FFT_FORWARD))
+                
+                // Calculate magnitude
+                var magnitudes = [Float](repeating: 0, count: halfN)
+                vDSP_zvmags(&output, 1, &magnitudes, 1, vDSP_Length(halfN))
+                
+                // Normalize and convert to dB
+                var normalizedMagnitudes = [Float](repeating: 0, count: halfN)
+                var scalingFactor = Float(1.0 / Double(n))
+                vDSP_vsmul(magnitudes, 1, &scalingFactor, &normalizedMagnitudes, 1, vDSP_Length(halfN))
+                
+                // Convert to dB
+                for i in 0..<halfN {
+                    normalizedMagnitudes[i] = 10.0 * log10f(normalizedMagnitudes[i] + 1e-6)
+                }
+                
+                // Set amplitudes with some smoothing
+                DispatchQueue.main.async {
+                    for i in 0..<self.halfN {
+                        // Add some smoothing to avoid too rapid changes
+                        let smoothingFactor: Float = 0.2
+                        self.amplitudes[i] = self.amplitudes[i] * (1 - smoothingFactor) + normalizedMagnitudes[i] * smoothingFactor
+                    }
+                }
             }
         }
     }

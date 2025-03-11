@@ -19,6 +19,9 @@ struct DynamicWaveVisualizer: View {
     var body: some View {
         GeometryReader { geometry in
             Canvas { context, size in
+                // Safety check for zero width or height
+                guard size.width > 0, size.height > 0, size.width.isFinite, size.height.isFinite else { return }
+                
                 let width = size.width
                 let height = size.height
                 let midHeight = height / 2
@@ -34,12 +37,17 @@ struct DynamicWaveVisualizer: View {
                     for x in stride(from: 0, to: width, by: 0.5) {
                         let relativeX = x / width
                         
-                        // Calculate y position based on wave parameters
+                        // Calculate y position based on wave parameters with safety checks
                         let localPhase = phase * layer.speedMultiplier
-                        let y = midHeight + sin(relativeX * layer.frequency * .pi * 2 + localPhase) 
+                        var y = midHeight + sin(relativeX * layer.frequency * .pi * 2 + localPhase) 
                             * layer.amplitude 
                             * amplitude 
                             * midHeight * 0.7
+                        
+                        // Ensure y is a valid, finite number
+                        if !y.isFinite {
+                            y = midHeight
+                        }
                         
                         path.addLine(to: CGPoint(x: x, y: y))
                     }
@@ -66,6 +74,7 @@ struct DynamicWaveVisualizer: View {
                 
                 // Vary amplitude slightly for more organic feel
                 withAnimation(.easeInOut(duration: 1.5)) {
+                    // Ensure amplitude stays within a valid range
                     amplitude = CGFloat.random(in: 0.9...1.1)
                 }
             }
@@ -122,41 +131,44 @@ struct DynamicWaveVisualizer: View {
             
         case .blue:
             return [
-                WaveLayer(frequency: 15, amplitude: 0.2, speedMultiplier: 1.5, color: .blue, opacity: 0.5, lineWidth: 1.5),
+                WaveLayer(frequency: 15, amplitude: 0.2, speedMultiplier: 1.5, color: .blue, opacity: 0.7, lineWidth: 1.5),
                 WaveLayer(frequency: 25, amplitude: 0.3, speedMultiplier: 2.0, color: .blue, opacity: 0.7, lineWidth: 2),
                 WaveLayer(frequency: 35, amplitude: 0.4, speedMultiplier: 2.5, color: .blue, opacity: 0.6, lineWidth: 1.5)
             ]
             
         case .violet:
             return [
-                WaveLayer(frequency: 20, amplitude: 0.2, speedMultiplier: 1.8, color: .purple, opacity: 0.5, lineWidth: 1.5),
+                WaveLayer(frequency: 20, amplitude: 0.2, speedMultiplier: 1.8, color: .purple, opacity: 0.7, lineWidth: 1.5),
                 WaveLayer(frequency: 35, amplitude: 0.3, speedMultiplier: 2.2, color: .purple, opacity: 0.7, lineWidth: 2),
                 WaveLayer(frequency: 50, amplitude: 0.4, speedMultiplier: 2.7, color: .purple, opacity: 0.6, lineWidth: 1)
             ]
             
         case .grey:
             return [
-                WaveLayer(frequency: 5, amplitude: 0.3, speedMultiplier: 0.8, color: .gray, opacity: 0.6, lineWidth: 2),
-                WaveLayer(frequency: 12, amplitude: 0.3, speedMultiplier: 1.2, color: .gray, opacity: 0.6, lineWidth: 2),
+                WaveLayer(frequency: 5, amplitude: 0.3, speedMultiplier: 0.8, color: .gray, opacity: 0.7, lineWidth: 2),
+                WaveLayer(frequency: 12, amplitude: 0.3, speedMultiplier: 1.2, color: .gray, opacity: 0.7, lineWidth: 2),
                 WaveLayer(frequency: 20, amplitude: 0.2, speedMultiplier: 1.6, color: .gray, opacity: 0.5, lineWidth: 1.5)
             ]
             
         case .green:
             return [
-                WaveLayer(frequency: 4, amplitude: 0.2, speedMultiplier: 0.7, color: .green, opacity: 0.5, lineWidth: 1.5),
+                WaveLayer(frequency: 4, amplitude: 0.2, speedMultiplier: 0.7, color: .green, opacity: 0.7, lineWidth: 1.5),
                 WaveLayer(frequency: 10, amplitude: 0.4, speedMultiplier: 1.0, color: .green, opacity: 0.7, lineWidth: 2),
-                WaveLayer(frequency: 18, amplitude: 0.2, speedMultiplier: 1.3, color: .green, opacity: 0.4, lineWidth: 1.5)
+                WaveLayer(frequency: 18, amplitude: 0.2, speedMultiplier: 1.3, color: .green, opacity: 0.5, lineWidth: 1.5)
             ]
             
         case .black:
             return [
-                WaveLayer(frequency: 2, amplitude: 0.1, speedMultiplier: 0.3, color: .black, opacity: 0.7, lineWidth: 1.5),
-                WaveLayer(frequency: 3, amplitude: 0.05, speedMultiplier: 0.4, color: .black, opacity: 0.5, lineWidth: 1)
+                WaveLayer(frequency: 2, amplitude: 0.1, speedMultiplier: 0.3, color: .gray, opacity: 0.7, lineWidth: 1.5),
+                WaveLayer(frequency: 3, amplitude: 0.05, speedMultiplier: 0.4, color: .gray, opacity: 0.5, lineWidth: 1)
             ]
         }
     }
     
     private func drawFrequencyBars(context: GraphicsContext, size: CGSize) {
+        // Safety check for zero width or height
+        guard size.width > 0, size.height > 0, size.width.isFinite, size.height.isFinite else { return }
+        
         let barCount = 20
         let barWidth = size.width / CGFloat(barCount)
         let maxHeight = size.height * 0.5
@@ -183,9 +195,17 @@ struct DynamicWaveVisualizer: View {
             }
             
             let height = maxHeight * heightFactor
-            let y = (size.height - height) / 2
+            // Ensure height is positive and finite
+            guard height > 0, height.isFinite else { continue }
             
-            let rect = CGRect(x: x + 1, y: y, width: barWidth - 2, height: height)
+            let y = (size.height - height) / 2
+            // Ensure y is finite
+            guard y.isFinite else { continue }
+            
+            // Ensure all rect parameters are valid
+            guard barWidth > 0, x.isFinite, barWidth.isFinite else { continue }
+            
+            let rect = CGRect(x: x + 1, y: y, width: max(0, barWidth - 2), height: height)
             let color = getColorForNoiseType(noiseType)
             
             // Draw bar
@@ -236,5 +256,6 @@ struct DynamicWaveVisualizer: View {
         DynamicWaveVisualizer(noiseType: .white)
             .frame(height: 200)
             .padding()
+            .environmentObject(AudioManager()) // Add environment object for preview
     }
 } 

@@ -1,8 +1,12 @@
 # Disclaimer
 
+## ENTERTAINMENT PURPOSES ONLY
+
+The Lullz app ("the App") is designed for **entertainment purposes only**. The App, including all features such as noise generation, binaural beats, breathing exercises, and related content, should be used solely for entertainment and relaxation. The App is not intended to diagnose, treat, cure, or prevent any disease or health condition.
+
 ## NOT MEDICAL ADVICE
 
-The Lullz app ("the App") is designed for relaxation, focus, and sleep assistance purposes only. The information and features provided through the App, including but not limited to noise generation, binaural beats, breathing exercises, and related content, are for general informational purposes only and are not intended to be a substitute for professional medical advice, diagnosis, or treatment.
+The information and features provided through the App are for general informational and entertainment purposes only and are not intended to be a substitute for professional medical advice, diagnosis, or treatment. No feature of this App should be interpreted as providing medical, health, or therapeutic advice of any kind.
 
 ## NO PROFESSIONAL RELATIONSHIP
 
@@ -18,7 +22,7 @@ THE APP IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESS OR 
 
 ## LIMITATION OF LIABILITY
 
-In no event shall the developers, owners, or contributors of the App be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the App or its contents, even if the App provider has been notified of the possibility of such damages.
+In no event shall the developers, owners, or contributors of the App be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the App or its contents, even if the App provider has been notified of the possibility of such damages. By using this App, you explicitly acknowledge that the creators, developers, and distributors assume no liability for any claims, damages, or losses resulting from your use of the App.
 
 ## ASSUMPTION OF RISK
 
@@ -30,4 +34,4 @@ By using the App, you acknowledge and agree that there are inherent risks in usi
 - The App contains features that may include flashing animations and audio that could potentially trigger adverse reactions in individuals with certain conditions.
 - If you experience any discomfort, dizziness, nausea, headaches, or other symptoms while using the App, discontinue use immediately and consult a healthcare professional.
 
-Last updated: March 1, 2025 
+Last updated: March 1, 2025

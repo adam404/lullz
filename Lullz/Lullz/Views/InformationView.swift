@@ -24,15 +24,32 @@ struct InformationView: View {
     
     var body: some View {
         NavigationStack {
-            VStack {
-                // Noise type picker
-                Picker("Noise Type", selection: $selectedNoiseType) {
-                    ForEach(AudioManager.NoiseType.allCases) { noiseType in
-                        Text(noiseType.rawValue).tag(noiseType)
+            VStack(spacing: 0) {
+                // Custom tab bar replacing the segmented picker
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(AudioManager.NoiseType.allCases) { noiseType in
+                            NoiseTypeTab(
+                                noiseType: noiseType,
+                                isSelected: selectedNoiseType == noiseType,
+                                action: {
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        selectedNoiseType = noiseType
+                                    }
+                                }
+                            )
+                        }
                     }
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
                 }
-                .pickerStyle(.segmented)
-                .padding()
+                .background(Color(.systemBackground))
+                .overlay(
+                    Rectangle()
+                        .frame(height: 1)
+                        .foregroundColor(Color.gray.opacity(0.2)),
+                    alignment: .bottom
+                )
                 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
@@ -41,42 +58,52 @@ struct InformationView: View {
                             .font(.largeTitle)
                             .fontWeight(.bold)
                             .accessibilityIdentifier("scientificInfoHeader")
+                            .padding(.horizontal)
+                            .padding(.top)
                         
                         // Description
                         Text(selectedNoiseType.description)
                             .font(.body)
                             .padding(.bottom, 5)
+                            .padding(.horizontal)
                         
                         // Scientific basis
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Scientific Basis")
                                 .font(.headline)
+                                .foregroundColor(.primary)
                             
                             Text(selectedNoiseType.scientificBasis)
                                 .font(.body)
                         }
-                        .padding(.bottom, 10)
+                        .padding(.horizontal)
+                        .padding(.bottom, 15)
                         
                         // Benefits
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Potential Benefits")
                                 .font(.headline)
+                                .foregroundColor(.primary)
                             
                             ForEach(benefitsFor(noiseType: selectedNoiseType), id: \.self) { benefit in
-                                HStack(alignment: .top) {
+                                HStack(alignment: .top, spacing: 12) {
                                     Image(systemName: "checkmark.circle.fill")
                                         .foregroundColor(.green)
+                                    
                                     Text(benefit)
+                                        .fixedSize(horizontal: false, vertical: true)
                                 }
-                                .padding(.vertical, 3)
+                                .padding(.vertical, 4)
                             }
                         }
-                        .padding(.bottom, 10)
+                        .padding(.horizontal)
+                        .padding(.bottom, 15)
                         
                         // Research references
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Research References")
                                 .font(.headline)
+                                .foregroundColor(.primary)
                             
                             ForEach(researchReferencesFor(noiseType: selectedNoiseType), id: \.self) { reference in
                                 Text(reference)
@@ -86,6 +113,7 @@ struct InformationView: View {
                                     .padding(.vertical, 3)
                             }
                         }
+                        .padding(.horizontal)
                         .padding(.bottom, 20)
                         
                         // Disclaimer for scientific claims
@@ -94,30 +122,37 @@ struct InformationView: View {
                             .foregroundColor(.secondary)
                             .padding()
                             .background(Color.secondary.opacity(0.1))
-                            .cornerRadius(8)
+                            .cornerRadius(12)
+                            .padding(.horizontal)
                             .accessibilityIdentifier("scientificDisclaimerText")
                     }
-                    .padding()
+                    .padding(.vertical)
                 }
                 
                 // Button to try this sound
                 Button(action: {
                     playSelectedNoise()
                 }) {
-                    Text("Try This Sound")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.accentColor)
-                        .cornerRadius(10)
+                    HStack {
+                        Image(systemName: "play.circle.fill")
+                            .font(.title3)
+                        Text("Try This Sound")
+                            .font(.headline)
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.accentColor)
+                    .cornerRadius(12)
+                    .shadow(color: Color.accentColor.opacity(0.4), radius: 4, x: 0, y: 2)
                 }
                 .padding(.horizontal)
                 .padding(.top, 5)
+                .padding(.bottom, 10)
                 
                 // Add the ad view at the bottom
                 AdView()
-                    .padding(.top, 10)
+                    .padding(.top, 5)
             }
             .navigationTitle("Sound Science")
             .toolbar {
@@ -136,7 +171,10 @@ struct InformationView: View {
     }
     
     private func playSelectedNoise() {
-        // Post notification to set noise type and play
+        // First set the noise type locally
+        audioManager.currentNoiseType = selectedNoiseType
+        
+        // Then post notification for switching tabs and playing
         NotificationCenter.default.post(
             name: Notification.Name("TryNoiseType"), 
             object: selectedNoiseType
@@ -150,6 +188,57 @@ struct InformationView: View {
             // Find TabView and switch to the first tab (player)
             if let tabController = rootViewController as? UITabBarController {
                 tabController.selectedIndex = 0
+            }
+        }
+        
+        // Provide feedback that noise was selected
+        let feedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
+        feedbackGenerator.impactOccurred()
+    }
+    
+    // Custom reusable tab view component
+    struct NoiseTypeTab: View {
+        let noiseType: AudioManager.NoiseType
+        let isSelected: Bool
+        let action: () -> Void
+        
+        var body: some View {
+            Button(action: action) {
+                VStack(spacing: 6) {
+                    // Icon for each noise type
+                    Image(systemName: iconFor(noiseType: noiseType))
+                        .font(.system(size: 24))
+                        .foregroundColor(isSelected ? .accentColor : .gray)
+                    
+                    Text(noiseType.rawValue)
+                        .font(.system(size: 12, weight: isSelected ? .semibold : .regular))
+                        .foregroundColor(isSelected ? .accentColor : .gray)
+                }
+                .frame(minWidth: 70)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(isSelected ? Color.accentColor.opacity(0.1) : Color.clear)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(isSelected ? Color.accentColor.opacity(0.3) : Color.clear, lineWidth: 1)
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
+        }
+        
+        // Get an appropriate icon for each noise type
+        private func iconFor(noiseType: AudioManager.NoiseType) -> String {
+            switch noiseType {
+            case .white: return "waveform"
+            case .pink: return "waveform.path"
+            case .brown: return "waveform.path.badge.minus"
+            case .blue: return "waveform.path.badge.plus"
+            case .violet: return "chart.line.uptrend.xyaxis"
+            case .grey: return "waveform.path.ecg"
+            case .green: return "leaf.fill"
+            case .black: return "moon.stars.fill"
             }
         }
     }

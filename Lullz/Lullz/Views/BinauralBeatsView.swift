@@ -103,7 +103,7 @@ struct BinauralBeatsView: View {
                                                 .font(.caption)
                                                 .foregroundColor(.secondary)
                                         }
-                                        .frame(width: 130, alignment: .leading)
+                                        .frame(width: 130, height: 70, alignment: .leading)
                                         .padding(.vertical, 12)
                                         .padding(.horizontal, 12)
                                         .background(
@@ -170,9 +170,26 @@ struct BinauralBeatsView: View {
                     .padding(.horizontal)
                     
                     // Advanced options
-                    DisclosureGroup(
-                        isExpanded: $showEffectsPanel,
-                        content: {
+                    VStack {
+                        Button(action: {
+                            withAnimation(.spring()) {
+                                showEffectsPanel.toggle()
+                            }
+                        }) {
+                            HStack {
+                                Text("Advanced Options")
+                                    .font(.headline)
+                                Spacer()
+                                Image(systemName: showEffectsPanel ? "chevron.up" : "chevron.down")
+                                    .font(.body)
+                                    .foregroundColor(.accentColor)
+                            }
+                            .contentShape(Rectangle())
+                            .padding(.horizontal)
+                            .padding(.vertical, 10)
+                        }
+                        
+                        if showEffectsPanel {
                             VStack(spacing: 20) {
                                 // Replace carrier noise details with advanced visualization options
                                 VStack(alignment: .leading, spacing: 10) {
@@ -191,26 +208,14 @@ struct BinauralBeatsView: View {
                                 }
                             }
                             .padding(.top, 10)
-                        },
-                        label: {
-                            HStack {
-                                Text("Advanced Options")
-                                    .font(.headline)
-                                Spacer()
-                                Image(systemName: showEffectsPanel ? "chevron.up" : "chevron.down")
-                            }
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                withAnimation {
-                                    showEffectsPanel.toggle()
-                                }
-                            }
+                            .padding(.horizontal)
+                            .padding(.bottom, 15)
+                            .transition(.move(edge: .top).combined(with: .opacity))
                         }
-                    )
-                    .padding()
+                    }
                     .background(
                         RoundedRectangle(cornerRadius: 16)
-                            .fill(Color.secondary.opacity(0.05))
+                            .fill(Color.secondary.opacity(0.1))
                     )
                     .padding(.horizontal)
                     
@@ -253,6 +258,7 @@ struct BinauralBeatsView: View {
             }
             .onAppear {
                 isAnimating = audioManager.isPlaying && audioManager.currentSoundCategory == .binaural
+                selectedPreset = audioManager.currentBinauralPreset
             }
         }
         // Set preferred color scheme to none to let system decide
@@ -262,76 +268,69 @@ struct BinauralBeatsView: View {
     // MARK: - UI Components
       
     private var binauralVisualization: some View {
-        ZStack {
-            // Background
-            RoundedRectangle(cornerRadius: 16)
-                .fill(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color.black.opacity(0.8),
-                            Color(UIColor.systemBackground).opacity(0.2)
-                        ]),
-                        startPoint: .bottom,
-                        endPoint: .top
+        GeometryReader { geometry in
+            ZStack {
+                // Background - removed gradient and replaced with solid color
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.black.opacity(0.8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
                     )
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
-                )
-            
-            // Left channel wave
-            waveform(offset: 0, color: .blue.opacity(0.6), speed: CGFloat(getFrequencyFor(position: .left)) / 100)
-                .opacity(isAnimating ? 1 : 0.3)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .mask(
+                
+                // Left channel wave
+                waveform(offset: 0, color: .blue.opacity(0.6), speed: CGFloat(getFrequencyFor(position: .left)) / 100)
+                    .opacity(isAnimating ? 1 : 0.3)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .mask(
+                        Rectangle()
+                            .frame(width: geometry.size.width / 2, height: geometry.size.height)
+                            .offset(x: -(geometry.size.width / 4))
+                    )
+                
+                // Right channel wave
+                waveform(offset: .pi, color: .red.opacity(0.6), speed: CGFloat(getFrequencyFor(position: .right)) / 100)
+                    .opacity(isAnimating ? 1 : 0.3)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .mask(
+                        Rectangle()
+                            .frame(width: geometry.size.width / 2, height: geometry.size.height)
+                            .offset(x: geometry.size.width / 4)
+                    )
+                
+                // Center indicator
+                if isAnimating {
                     Rectangle()
-                        .frame(width: UIScreen.main.bounds.width / 2, height: .infinity)
-                        .offset(x: -(UIScreen.main.bounds.width / 4))
-                )
-            
-            // Right channel wave
-            waveform(offset: .pi, color: .red.opacity(0.6), speed: CGFloat(getFrequencyFor(position: .right)) / 100)
-                .opacity(isAnimating ? 1 : 0.3)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .mask(
-                    Rectangle()
-                        .frame(width: UIScreen.main.bounds.width / 2, height: .infinity)
-                        .offset(x: UIScreen.main.bounds.width / 4)
-                )
-            
-            // Center indicator
-            if isAnimating {
-                Rectangle()
-                    .fill(Color.white.opacity(0.7))
-                    .frame(width: 1, height: 60)
-            }
-            
-            // Text labels
-            HStack {
-                VStack {
-                    Spacer()
-                    Text("\(String(format: "%.1f", getFrequencyFor(position: .left)))Hz")
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.7))
-                        .padding(6)
-                        .background(Color.blue.opacity(0.3))
-                        .cornerRadius(4)
+                        .fill(Color.white.opacity(0.7))
+                        .frame(width: 1, height: 60)
                 }
                 
-                Spacer()
-                
-                VStack {
+                // Text labels
+                HStack {
+                    VStack {
+                        Spacer()
+                        Text("\(String(format: "%.1f", getFrequencyFor(position: .left)))Hz")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.7))
+                            .padding(6)
+                            .background(Color.blue.opacity(0.3))
+                            .cornerRadius(4)
+                    }
+                    
                     Spacer()
-                    Text("\(String(format: "%.1f", getFrequencyFor(position: .right)))Hz")
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.7))
-                        .padding(6)
-                        .background(Color.red.opacity(0.3))
-                        .cornerRadius(4)
+                    
+                    VStack {
+                        Spacer()
+                        Text("\(String(format: "%.1f", getFrequencyFor(position: .right)))Hz")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.7))
+                            .padding(6)
+                            .background(Color.red.opacity(0.3))
+                            .cornerRadius(4)
+                    }
                 }
+                .padding()
             }
-            .padding()
         }
     }
     
@@ -426,6 +425,11 @@ struct BinauralBeatsView: View {
         }
         .buttonStyle(ScaleButtonStyle())
         .padding(.horizontal)
+        .onAppear {
+            // Update selected preset to match what's in the audio manager
+            // when returning to this view
+            selectedPreset = audioManager.currentBinauralPreset
+        }
     }
     
     // MARK: - Helper Methods
@@ -434,6 +438,9 @@ struct BinauralBeatsView: View {
         let amplitude: CGFloat = isAnimating ? 40 : 20
         
         return Canvas { context, size in
+            // Safety check for valid dimensions
+            guard size.width > 0, size.height > 0, size.width.isFinite, size.height.isFinite else { return }
+            
             context.opacity = 0.8
             
             var path = Path()
@@ -446,7 +453,13 @@ struct BinauralBeatsView: View {
             for x in stride(from: 0, through: width, by: 1) {
                 let relativeX = x / width
                 let sineValue = sin(relativeX * .pi * 10 + offset + animationPhase * speed)
-                let y = midHeight + amplitude * sineValue
+                var y = midHeight + amplitude * sineValue
+                
+                // Ensure y is a valid, finite number
+                if !y.isFinite {
+                    y = midHeight
+                }
+                
                 path.addLine(to: CGPoint(x: x, y: y))
             }
             

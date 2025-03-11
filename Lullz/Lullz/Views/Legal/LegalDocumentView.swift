@@ -50,7 +50,19 @@ struct LegalDocumentView: View {
                 isLoading = false
             }
         } else {
-            documentText = "Document not found"
+            documentText = """
+            # \(documentType.rawValue) Not Found
+            
+            ## ENTERTAINMENT PURPOSES ONLY
+            
+            Lullz is provided solely for entertainment purposes. The application is not intended to diagnose, treat, cure, or prevent any disease or health condition.
+            
+            ## LIABILITY DISCLAIMER
+            
+            The creators, developers, and distributors of Lullz assume no liability whatsoever for any claims, damages, or losses resulting from your use of the application or any information contained therein.
+            
+            Please contact support@lullzapp.com if you have any questions.
+            """
             isLoading = false
         }
     }

@@ -10,6 +10,7 @@ import AVFoundation
 
 struct BreathingExerciseView: View {
     @EnvironmentObject var audioManager: AudioManager
+    @Environment(\.dismiss) private var dismiss
     let pattern: BreathingPattern
     
     @State private var isActive: Bool = false
@@ -19,6 +20,9 @@ struct BreathingExerciseView: View {
     @State private var targetCycles: Int = 5
     @State private var timer: Timer?
     @State private var showingSettings = false
+    
+    // Add a local mutable copy of the pattern's useAudioCues property
+    @State private var localUseAudioCues: Bool = true
     
     // Audio feedback - make these @State so they can be modified in methods
     @State private var inhaleSound: AVAudioPlayer?
@@ -32,6 +36,7 @@ struct BreathingExerciseView: View {
     // Add public initializer
     init(pattern: BreathingPattern) {
         self.pattern = pattern
+        self._localUseAudioCues = State(initialValue: pattern.useAudioCues)
     }
     
     var body: some View {
@@ -39,6 +44,21 @@ struct BreathingExerciseView: View {
             VStack(spacing: 20) {
                 // Header info
                 VStack {
+                    HStack {
+                        Button {
+                            pauseExercise()
+                            cleanupAudio()
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding([.top, .leading])
+                        
+                        Spacer()
+                    }
+                    
                     Text(pattern.name)
                         .font(.title2)
                         .fontWeight(.bold)
@@ -127,8 +147,21 @@ struct BreathingExerciseView: View {
                 Spacer()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .onAppear {
+            .background(Color(.systemBackground))
+            .task {
+                // Use task instead of onAppear for better timing
+                print("BreathingExerciseView task started with pattern: \(pattern.name)")
                 setupAudio()
+                // Initialize immediately to the first step
+                currentStepIndex = 0
+                progress = 0.01 // Start with a tiny bit of progress to make the animation visible
+                
+                // Add a small delay and then update progress to force redraw
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    print("Forcing UI update for BreathingExerciseView")
+                    // Toggle a tiny bit of progress to force a UI update
+                    progress = 0.02
+                }
             }
             .onDisappear {
                 pauseExercise()
@@ -142,27 +175,47 @@ struct BreathingExerciseView: View {
     
     private func setupAudio() {
         // Setup audio files
-        if pattern.useAudioCues {
+        if localUseAudioCues {
             do {
+                var audioFilesFound = false
+                
                 if let inhalePath = Bundle.main.path(forResource: "inhale", ofType: "wav") {
                     self.inhaleSound = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: inhalePath))
                     self.inhaleSound?.prepareToPlay()
                     self.inhaleSound?.volume = pattern.audioVolume
+                    audioFilesFound = true
+                } else {
+                    print("WARNING: inhale.wav audio file not found in bundle")
                 }
                 
                 if let exhalePath = Bundle.main.path(forResource: "exhale", ofType: "wav") {
                     self.exhaleSound = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: exhalePath))
                     self.exhaleSound?.prepareToPlay()
                     self.exhaleSound?.volume = pattern.audioVolume
+                    audioFilesFound = true
+                } else {
+                    print("WARNING: exhale.wav audio file not found in bundle")
                 }
                 
                 if let holdPath = Bundle.main.path(forResource: "hold", ofType: "wav") {
                     self.holdSound = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: holdPath))
                     self.holdSound?.prepareToPlay()
                     self.holdSound?.volume = pattern.audioVolume
+                    audioFilesFound = true
+                } else {
+                    print("WARNING: hold.wav audio file not found in bundle")
+                }
+                
+                // If none of the audio files were found, disable audio cues to avoid potential issues
+                if !audioFilesFound {
+                    print("No breathing audio files found in bundle. Disabling audio cues.")
+                    // Just disable locally, don't modify the pattern
+                    localUseAudioCues = false
                 }
             } catch {
                 print("Error loading audio files: \(error.localizedDescription)")
+                // Disable audio cues if there was an error
+                localUseAudioCues = false
             }
         }
         
@@ -234,7 +287,7 @@ struct BreathingExerciseView: View {
     }
     
     private func playStepAudio() {
-        guard pattern.useAudioCues else { return }
+        guard localUseAudioCues else { return }
         
         // Play appropriate sound based on the phase
         switch currentStep.phase {
@@ -260,9 +313,18 @@ extension Color {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
         hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
         
+        // Ensure we have valid input
+        guard hexSanitized.count == 6 else {
+            print("Invalid hex color: \(hex) - wrong length")
+            return nil
+        }
+        
         var rgb: UInt64 = 0
         
-        guard Scanner(string: hexSanitized).scanHexInt64(&rgb) else { return nil }
+        guard Scanner(string: hexSanitized).scanHexInt64(&rgb) else {
+            print("Invalid hex color: \(hex) - scanning failed")
+            return nil
+        }
         
         let red = Double((rgb & 0xFF0000) >> 16) / 255.0
         let green = Double((rgb & 0x00FF00) >> 8) / 255.0
@@ -270,4 +332,21 @@ extension Color {
         
         self.init(red: red, green: green, blue: blue)
     }
+}
+
+#Preview {
+    // Create a sample breathing pattern for preview
+    let samplePattern = BreathingPattern(
+        name: "4-7-8 Breathing",
+        description: "Inhale for 4, hold for 7, exhale for 8 seconds",
+        steps: [
+            BreathStep(phase: .inhale, durationSeconds: 4),
+            BreathStep(phase: .holdAfterInhale, durationSeconds: 7),
+            BreathStep(phase: .exhale, durationSeconds: 8)
+        ],
+        isPreset: true
+    )
+    
+    return BreathingExerciseView(pattern: samplePattern)
+        .environmentObject(AudioManager())
 } 

@@ -77,13 +77,12 @@ struct ProfilesView: View {
 }
 
 struct ProfileDetailView: View {
+    @EnvironmentObject var audioManager: AudioManager
     let profile: NoiseProfile
 
     var body: some View {
         VStack {
             // Existing code...
-            SmartHomeIntegrationView(profileId: UUID())
-                .padding(.top, 20)
         }
     }
 } 

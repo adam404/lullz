@@ -34,7 +34,13 @@ struct BreathingSettingsView: View {
         self._audioVolume = State(initialValue: pattern.audioVolume)
         self._vibrationEnabled = State(initialValue: pattern.vibrationEnabled)
         self._voiceGuidanceEnabled = State(initialValue: pattern.voiceGuidanceEnabled)
-        self._accentColor = State(initialValue: Color(hex: pattern.accentColor) ?? .blue)
+        
+        // Safely convert the accent color with a fallback to blue
+        let parsedColor = Color(hex: pattern.accentColor)
+        if parsedColor == nil {
+            print("Could not parse color from hex: \(pattern.accentColor), using default blue")
+        }
+        self._accentColor = State(initialValue: parsedColor ?? .blue)
         
         self._backgroundNoiseEnabled = State(initialValue: pattern.backgroundNoiseType != nil)
         self._backgroundNoiseType = State(initialValue: pattern.backgroundNoiseType ?? AudioManager.NoiseType.brown.rawValue)

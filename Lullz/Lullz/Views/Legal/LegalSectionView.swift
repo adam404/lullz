@@ -96,10 +96,10 @@ enum LegalDocumentType: String, CaseIterable, Identifiable {
   
   var filename: String {
     switch self {
-    case .disclaimer: return "disclaimer"
-    case .privacyPolicy: return "privacy_policy"
-    case .termsOfService: return "terms_of_service"
-    case .license: return "license"
+    case .disclaimer: return "Disclaimer"
+    case .privacyPolicy: return "PrivacyPolicy"
+    case .termsOfService: return "TermsOfService"
+    case .license: return "License"
     }
   }
 }

@@ -9,45 +9,13 @@ import SwiftUI
 import SwiftData
 import AVFoundation
 
-// Helper class to handle notifications since structs can't use escaping closures that capture self
-class SmartHomeNotificationHandler {
-    // Use a simple function type that doesn't capture anything
-    var activationCallback: ((UUID) -> Void)?
-    
-    init(activationCallback: @escaping (UUID) -> Void) {
-        self.activationCallback = activationCallback
-        
-        NotificationCenter.default.addObserver(forName: Notification.Name("ActivateSmartHomeConfig"), 
-                                              object: nil, 
-                                              queue: .main) { [weak self] notification in
-            if let profileId = notification.userInfo?["profileId"] as? UUID,
-               let callback = self?.activationCallback {
-                callback(profileId)
-            }
-        }
-    }
-    
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
-}
-
 // Create a setup manager class to handle App initialization
 class AppSetupManager: ObservableObject {
-    private var notificationHandler: SmartHomeNotificationHandler
-    var homeManager: HomeManager
     var audioManager: AudioManager
     private var isInitialized = false
     
-    init(homeManager: HomeManager, audioManager: AudioManager) {
-        self.homeManager = homeManager
+    init(audioManager: AudioManager) {
         self.audioManager = audioManager
-        
-        // Initialize notification handler
-        let homeManagerRef = homeManager
-        self.notificationHandler = SmartHomeNotificationHandler { profileId in
-            LullzApp.activateSmartHomeConfig(for: profileId, using: homeManagerRef)
-        }
         
         // Setup basic audio session
         setupAudioSession()
@@ -56,9 +24,8 @@ class AppSetupManager: ObservableObject {
         NotificationCenter.default.addObserver(
             forName: Notification.Name("RequestDatabaseReset"),
             object: nil,
-            queue: .main) { [weak self] _ in
+            queue: .main) { _ in
                 print("Database reset requested")
-                self?.resetDatabase()
             }
     }
     
@@ -153,9 +120,6 @@ class AppSetupManager: ObservableObject {
 struct LullzApp: App {
     // App state manager to handle audio session
     @StateObject private var audioManager = AudioManager()
-    
-    // Add this property to the LullzApp struct
-    @StateObject private var homeManager = HomeManager()
     
     // Setup manager to handle initialization and state
     @StateObject private var setupManager: AppSetupManager
@@ -391,7 +355,6 @@ struct LullzApp: App {
     init() {
         // Initialize the setup manager with our managers
         _setupManager = StateObject(wrappedValue: AppSetupManager(
-            homeManager: HomeManager(),
             audioManager: AudioManager()
         ))
     }
@@ -402,7 +365,6 @@ struct LullzApp: App {
         WindowGroup {
             MainTabView()
                 .environmentObject(audioManager)
-                .environmentObject(homeManager)
                 .sheet(isPresented: $showingLegalTerms) {
                     LegalSectionView()
                         .interactiveDismissDisabled()
@@ -420,17 +382,6 @@ struct LullzApp: App {
         .onChange(of: scenePhase) { oldPhase, newPhase in
             setupManager.handleScenePhaseChange(from: oldPhase, to: newPhase)
         }
-    }
-    
-    // Method to handle smart home configuration activation
-    static func activateSmartHomeConfig(for profileId: UUID, using homeManager: HomeManager) {
-        // Continue only if the HomeManager is authorized and we can find a matching configuration
-        guard homeManager.isAuthorized,
-              let config = homeManager.savedConfigurations.first(where: { $0.associatedProfileId == profileId }) else {
-            return
-        }
-        
-        homeManager.applyConfiguration(config)
     }
 }
 

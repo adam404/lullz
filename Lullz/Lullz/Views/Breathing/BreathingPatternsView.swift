@@ -54,10 +54,11 @@ struct BreathingPatternsView: View {
             .sheet(isPresented: $showingAddPattern) {
                 BreathingPatternEditorView()
             }
-            .fullScreenCover(isPresented: $showingExercise) {
+            .sheet(isPresented: $showingExercise) {
                 if let pattern = selectedPattern {
                     BreathingExerciseView(pattern: pattern)
                         .environmentObject(audioManager)
+                        .interactiveDismissDisabled(false)
                 }
             }
             .onAppear {
@@ -182,4 +183,10 @@ struct BreathingPatternsView: View {
         modelContext.insert(coherentBreathing)
         modelContext.insert(diaphragmaticBreathing)
     }
+}
+
+#Preview {
+    BreathingPatternsView()
+        .environmentObject(AudioManager())
+        .modelContainer(for: BreathingPattern.self, inMemory: true)
 } 

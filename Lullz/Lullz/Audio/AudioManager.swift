@@ -110,10 +110,15 @@ class AudioManager: ObservableObject {
     }
     @Published var currentSoundCategory: SoundCategory = .noise {
         didSet {
-            if oldValue != currentSoundCategory && isPlaying {
+            if oldValue != currentSoundCategory {
                 // Need to completely rebuild the audio chain when switching categories
+                // Store the playback state
+                let wasPlaying = isPlaying
                 stopSound()
-                playSound()
+                if wasPlaying {
+                    // Resume playback if it was previously playing
+                    playSound()
+                }
             }
         }
     }
@@ -328,11 +333,8 @@ class AudioManager: ObservableObject {
     
     func stopNoise() {
         // Remove the tap if it exists
-        do {
+        if audioEngine.inputConnectionPoint(for: audioEngine.mainMixerNode, inputBus: 0) != nil {
             audioEngine.mainMixerNode.removeTap(onBus: 0)
-        } catch {
-            print("Error removing audio tap: \(error.localizedDescription)")
-            // Continue with cleanup even if tap removal fails
         }
         
         if let sourceNode = noiseSourceNode {
@@ -349,22 +351,37 @@ class AudioManager: ObservableObject {
         if isPlaying {
             stopSound()
         } else {
+            // Play with current settings
             playSound()
         }
     }
     
     func pausePlayback() {
         if isPlaying {
+            // Don't change volume, just pause
             audioEngine.pause()
             isPlaying = false
+            
+            // Notify that playback was paused
+            NotificationCenter.default.post(
+                name: Notification.Name("AudioPlaybackPaused"),
+                object: nil
+            )
         }
     }
     
     func resumePlayback() {
         if !isPlaying {
             do {
+                // Resume with existing volume
                 try audioEngine.start()
                 isPlaying = true
+                
+                // Notify that playback has resumed
+                NotificationCenter.default.post(
+                    name: Notification.Name("AudioPlaybackResumed"),
+                    object: nil
+                )
             } catch {
                 print("Could not resume audio engine: \(error.localizedDescription)")
             }
@@ -451,13 +468,12 @@ class AudioManager: ObservableObject {
     private func generateGreenNoise() -> Float {
         // Green noise emphasizes the middle frequency range like natural environments
         // Implemented as band-passed noise focused on 500Hz-2kHz region
-        var white = generateWhiteNoise()
+        let white = generateWhiteNoise()
         
         // Apply bandpass filtering
         for i in 0..<greenNoiseFilters.count {
             let coeff = greenNoiseFilters[i].coeff
             greenNoiseState = (1-coeff) * greenNoiseState + coeff * white
-            white = greenNoiseState
         }
         
         return greenNoiseState * 2.0 // Compensate for filter attenuation
@@ -520,16 +536,21 @@ class AudioManager: ObservableObject {
         }
         
         // Configure the rest of the audio chain and start playback
-        if let sourceNode = noiseSourceNode {
+        if let _ = noiseSourceNode {
             configureAudioProcessingChain(format: format)
             
             do {
-                try audioEngine.start()
+                // Check if the audio engine is already running
+                if !audioEngine.isRunning {
+                    try audioEngine.start()
+                }
                 isPlaying = true
                 
-                // Ensure we don't have an existing tap before installing a new one
-                // Do NOT install tap here, it's already done in configureAudioProcessingChain
-                // This is likely causing the crash
+                // Notify that playback has started
+                NotificationCenter.default.post(
+                    name: Notification.Name("AudioPlaybackStarted"),
+                    object: currentSoundCategory
+                )
                 
             } catch {
                 print("Could not start audio engine: \(error.localizedDescription)")
@@ -615,7 +636,27 @@ class AudioManager: ObservableObject {
     // Rename these functions to match the new naming convention
     func stopSound() {
         // Same as the old stopNoise() function
-        stopNoise()
+        
+        // Remove the tap if it exists
+        audioEngine.mainMixerNode.removeTap(onBus: 0)
+        
+        if let sourceNode = noiseSourceNode {
+            audioEngine.detach(sourceNode)
+            self.noiseSourceNode = nil
+        }
+        
+        // Stop the audio engine if it's running
+        if audioEngine.isRunning {
+            audioEngine.stop()
+        }
+        
+        isPlaying = false
+        
+        // Notify that playback has stopped
+        NotificationCenter.default.post(
+            name: Notification.Name("AudioPlaybackStopped"),
+            object: nil
+        )
     }
     
     // Add these functions to AudioManager
@@ -631,24 +672,50 @@ class AudioManager: ObservableObject {
             repeats: false
         ) { [weak self] _ in
             guard let self = self else { return }
-            if self.isPlaying {
-                self.stopSound()
-            }
-            self.sleepTimerActive = false
-            self.sleepTimerEndDate = nil
-            // Post notification that timer completed
-            NotificationCenter.default.post(
-                name: Notification.Name("SleepTimerCompleted"),
-                object: nil
-            )
+            
+            // Gradually fade out the volume over a few seconds
+            self.fadeOutAndStop()
         }
         
         sleepTimerActive = true
+        
         // Post notification that timer started
         NotificationCenter.default.post(
             name: Notification.Name("SleepTimerStarted"),
             object: sleepTimerDuration
         )
+    }
+
+    // Add a fade out method for smooth volume transition
+    private func fadeOutAndStop() {
+        // Remember the original volume
+        let originalVolume = volume
+        
+        // Create a fade-out effect
+        _ = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] timer in
+            guard let self = self else {
+                timer.invalidate()
+                return
+            }
+            
+            // Reduce volume gradually
+            if self.volume > 0.05 {
+                self.volume -= 0.05
+            } else {
+                // Stop playback when volume is near zero
+                self.volume = 0.0
+                self.stopSound()
+                
+                // Reset volume to original level for next playback
+                self.volume = originalVolume
+                
+                // Cancel the sleep timer state
+                self.cancelSleepTimer()
+                
+                // Invalidate fade timer
+                timer.invalidate()
+            }
+        }
     }
 
     func cancelSleepTimer() {
@@ -680,28 +747,22 @@ class AudioManager: ObservableObject {
     // Add this method to AudioManager
     func createDefaultEnvironments() {
         // Use a background thread to handle this work
-        DispatchQueue.global(qos: .utility).async { [weak self] in
-            guard let self = self else { return }
+        Task {
+            let modelContext = await SwiftDataModel.shared.modelContainer.mainContext
             
-            let modelContext = SwiftDataModel.shared.modelContainer.mainContext
-            
-            // Check if we already have presets - do this check on the main thread
+            // Check if we already have presets
             let descriptor = FetchDescriptor<MixedEnvironment>(predicate: #Predicate { $0.isPreset })
             
             // Fetch on main thread to avoid SwiftData threading issues
-            Task { @MainActor in
-                let existingPresets = try? modelContext.fetch(descriptor)
+            if let existingPresets = try? await modelContext.fetch(descriptor), existingPresets.isEmpty {
+                // Create environments in the background
+                let environments = self.buildDefaultEnvironments()
                 
-                if existingPresets?.isEmpty ?? true {
-                    // Create environments in the background
-                    let environments = self.buildDefaultEnvironments()
-                    
-                    // Insert them on the main thread
-                    Task { @MainActor in
-                        // Add presets to the model context
-                        for environment in environments {
-                            modelContext.insert(environment)
-                        }
+                // Insert them on the main thread
+                await MainActor.run {
+                    // Add presets to the model context
+                    for environment in environments {
+                        modelContext.insert(environment)
                     }
                 }
             }
@@ -828,32 +889,188 @@ class AudioManager: ObservableObject {
         ]
         environments.append(forestMorning)
         
+        // NEW ENVIRONMENTS
+        
+        // 1. Cosmic Void
+        let cosmicVoid = MixedEnvironment(
+            name: "Cosmic Void",
+            description: "The ethereal emptiness of deep space with faint celestial resonances"
+        )
+        cosmicVoid.isPreset = true
+        cosmicVoid.layers = [
+            SoundLayer(
+                soundType: "black",
+                volume: 0.6,
+                balance: 0.5,
+                isActive: true
+            ),
+            SoundLayer(
+                soundType: "violet",
+                volume: 0.25,
+                balance: 0.4,
+                isActive: true,
+                modulation: .spatial,
+                modulationRate: 0.05,
+                modulationDepth: 0.8
+            ),
+            SoundLayer(
+                soundType: "binaural",
+                volume: 0.3,
+                balance: 0.5,
+                isActive: true,
+                binauralPreset: "deep"
+            )
+        ]
+        environments.append(cosmicVoid)
+        
+        // 2. Summer Thunderstorm
+        let summerStorm = MixedEnvironment(
+            name: "Summer Thunderstorm",
+            description: "A warm summer rainstorm with distant rolling thunder"
+        )
+        summerStorm.isPreset = true
+        summerStorm.layers = [
+            SoundLayer(
+                soundType: "blue",
+                volume: 0.55,
+                balance: 0.5,
+                isActive: true,
+                modulation: .amplitude,
+                modulationRate: 0.15,
+                modulationDepth: 0.4
+            ),
+            SoundLayer(
+                soundType: "brown",
+                volume: 0.35,
+                balance: 0.5,
+                isActive: true,
+                modulation: .amplitude,
+                modulationRate: 0.08,
+                modulationDepth: 0.9
+            ),
+            SoundLayer(
+                soundType: "white",
+                volume: 0.2,
+                balance: 0.6,
+                isActive: true
+            )
+        ]
+        environments.append(summerStorm)
+        
+        // 3. Desert Winds
+        let desertWinds = MixedEnvironment(
+            name: "Desert Winds",
+            description: "The gentle shifting of sand dunes under an endless sky"
+        )
+        desertWinds.isPreset = true
+        desertWinds.layers = [
+            SoundLayer(
+                soundType: "pink",
+                volume: 0.5,
+                balance: 0.5,
+                isActive: true,
+                modulation: .spatial,
+                modulationRate: 0.1,
+                modulationDepth: 0.6
+            ),
+            SoundLayer(
+                soundType: "white",
+                volume: 0.15,
+                balance: 0.45,
+                isActive: true,
+                modulation: .amplitude,
+                modulationRate: 0.12,
+                modulationDepth: 0.3
+            ),
+            SoundLayer(
+                soundType: "brown",
+                volume: 0.1,
+                balance: 0.55,
+                isActive: true
+            )
+        ]
+        environments.append(desertWinds)
+        
+        // 4. Northern Lights
+        let northernLights = MixedEnvironment(
+            name: "Northern Lights",
+            description: "A soundscape inspired by the auroras dancing across Arctic skies"
+        )
+        northernLights.isPreset = true
+        northernLights.layers = [
+            SoundLayer(
+                soundType: "violet",
+                volume: 0.4,
+                balance: 0.5,
+                isActive: true,
+                modulation: .spatial,
+                modulationRate: 0.2,
+                modulationDepth: 0.5
+            ),
+            SoundLayer(
+                soundType: "blue",
+                volume: 0.3,
+                balance: 0.45,
+                isActive: true
+            ),
+            SoundLayer(
+                soundType: "binaural",
+                volume: 0.25,
+                balance: 0.5,
+                isActive: true,
+                binauralPreset: "relaxation"
+            )
+        ]
+        environments.append(northernLights)
+        
+        // 5. Urban Cafe
+        let urbanCafe = MixedEnvironment(
+            name: "Urban Cafe",
+            description: "The comforting ambient noise of a busy coffee shop"
+        )
+        urbanCafe.isPreset = true
+        urbanCafe.layers = [
+            SoundLayer(
+                soundType: "brown",
+                volume: 0.3,
+                balance: 0.5,
+                isActive: true
+            ),
+            SoundLayer(
+                soundType: "pink",
+                volume: 0.4,
+                balance: 0.45,
+                isActive: true,
+                modulation: .amplitude,
+                modulationRate: 0.2,
+                modulationDepth: 0.3
+            ),
+            SoundLayer(
+                soundType: "grey",
+                volume: 0.25,
+                balance: 0.55,
+                isActive: true,
+                modulation: .amplitude,
+                modulationRate: 0.25,
+                modulationDepth: 0.2
+            )
+        ]
+        environments.append(urbanCafe)
+        
         return environments
     }
     
     // Add this method to AudioManager
-    func activateSmartHomeConfig(for profile: NoiseProfile) {
-        // Access HomeManager through the environment or DI mechanism
-        // This will be set by the app when initializing AudioManager
-        NotificationCenter.default.post(name: Notification.Name("ActivateSmartHomeConfig"), 
-                                       object: nil, 
-                                       userInfo: ["profileId": profile.id])
-    }
-
-    // Also add this to the playProfile method
     func playProfile(_ profile: NoiseProfile) {
         // Existing code...
         
-        // If smart home integration is enabled, apply the associated configuration
-        if UserDefaults.standard.bool(forKey: "enableSmartHomeIntegration") {
-            activateSmartHomeConfig(for: profile)
-        }
+        // Remove smart home integration code
     }
 
     @MainActor
     func saveCurrentProfile() {
         // Use SwiftDataModel instead of persistentContainer
-        let mainContext = SwiftDataModel.shared.modelContainer.mainContext
+        _ = SwiftDataModel.shared.modelContainer.mainContext
         // ... existing code ...
     }
 
@@ -861,7 +1078,7 @@ class AudioManager: ObservableObject {
         #if os(iOS)
         // iOS implementation
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootViewController = windowScene.windows.first?.rootViewController {
+           let _ = windowScene.windows.first?.rootViewController {
             // ... existing code ...
         }
         #else
@@ -871,56 +1088,43 @@ class AudioManager: ObservableObject {
         #endif
     }
 
-    // Add this method to update noise type without completely restarting playback
+    // Update the noise type without stopping/restarting playback
     private func updateNoiseType() {
-        // Only use this optimized method for switching between noise types
-        // within the same sound category
-        guard currentSoundCategory == .noise else {
-            // For category changes, use the full restart approach
-            stopSound()
-            playSound()
-            return
+        // This is called when currentNoiseType changes while isPlaying is true
+        // We need to update the noise source without interrupting playback
+        
+        guard isPlaying else { return }
+        
+        // Get the format
+        let format = audioEngine.mainMixerNode.outputFormat(forBus: 0)
+        
+        // Create a new source node with the updated noise type
+        let oldSourceNode = noiseSourceNode
+        
+        // Create a new source node appropriate for the current sound category
+        switch currentSoundCategory {
+        case .noise:
+            createNoiseSourceNode(format: format)
+        case .binaural:
+            createBinauralSourceNode(format: format)
         }
         
-        // Update noise generation without completely stopping the engine
-        // This is more efficient than stopping and restarting
-        
-        // If the audio engine isn't running, don't do anything
-        guard audioEngine.isRunning else { return }
-        
-        // Detach the old source node if it exists
-        if let sourceNode = noiseSourceNode {
-            audioEngine.detach(sourceNode)
-            self.noiseSourceNode = nil
-        }
-        
-        // Create a new source node with the current noise type
-        let format = AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 2)!
-        
-        // Create noise generator node
-        self.noiseSourceNode = AVAudioSourceNode { _, _, frameCount, audioBufferList -> OSStatus in
-            let ablPointer = UnsafeMutableAudioBufferListPointer(audioBufferList)
+        // If we successfully created a new source node, connect it
+        if let newSourceNode = noiseSourceNode, let leftDelayNode = audioEngine.inputConnectionPoint(for: leftDelayNode, inputBus: 0)?.node, let rightDelayNode = audioEngine.inputConnectionPoint(for: rightDelayNode, inputBus: 0)?.node {
             
-            for frame in 0..<Int(frameCount) {
-                // Generate noise based on selected type
-                let sample = self.generateNoiseForCurrentType()
-                
-                // Fill both channels with the same sample for now
-                for buffer in ablPointer {
-                    let bufferPointer = UnsafeMutableBufferPointer<Float>(buffer)
-                    bufferPointer[frame] = sample
+            // Attach the new node
+            audioEngine.attach(newSourceNode)
+            
+            // Connect to delay nodes
+            audioEngine.connect(newSourceNode, to: leftDelayNode, format: format)
+            audioEngine.connect(newSourceNode, to: rightDelayNode, format: format)
+            
+            // Detach the old node after a short delay to avoid audio glitches
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                if let oldNode = oldSourceNode {
+                    self.audioEngine.detach(oldNode)
                 }
             }
-            
-            return noErr
         }
-        
-        // Attach and connect the new source node
-        guard let sourceNode = noiseSourceNode else { return }
-        audioEngine.attach(sourceNode)
-        
-        // Connect to delay nodes
-        audioEngine.connect(sourceNode, to: leftDelayNode, format: format)
-        audioEngine.connect(sourceNode, to: rightDelayNode, format: format)
     }
 } 

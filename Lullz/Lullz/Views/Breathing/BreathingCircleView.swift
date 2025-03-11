@@ -31,26 +31,31 @@ struct BreathingCircleView: View {
     
     var body: some View {
         ZStack {
+            // Background circle for more visibility
+            Circle()
+                .fill(color.opacity(0.05))
+            
             // Outer circle
             Circle()
-                .stroke(color.opacity(0.3), lineWidth: 10)
+                .stroke(color.opacity(0.3), lineWidth: 15)
             
             // Pulsing circle
             Circle()
                 .scale(currentScale)
-                .foregroundColor(color.opacity(0.2))
+                .foregroundColor(color.opacity(0.3))
             
             // Inner circle
             Circle()
-                .trim(from: 0, to: CGFloat(progress))
-                .stroke(color, style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                .trim(from: 0, to: max(0.01, CGFloat(progress))) // Ensure at least a small segment is visible
+                .stroke(color, style: StrokeStyle(lineWidth: 15, lineCap: .round))
                 .rotationEffect(.degrees(-90))
-                .animation(.linear, value: progress)
+                .animation(.linear(duration: 0.05), value: progress)
             
             Text(phase.instruction)
                 .font(.headline)
                 .foregroundColor(color)
         }
         .padding(20)
+        .background(Color(.systemBackground))
     }
 } 

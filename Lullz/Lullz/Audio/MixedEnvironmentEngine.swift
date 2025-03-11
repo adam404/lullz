@@ -19,6 +19,13 @@ class MixedEnvironmentEngine {
     private var currentLayers: [SoundLayer] = []
     private var isPlaying = false
     private var sampleTime: Int = 0
+    private var isPaused = false
+    private var _currentEnvironment: UUID? = nil
+    
+    // Public property to access the current environment ID
+    var currentEnvironment: UUID? {
+        return _currentEnvironment
+    }
     
     // Init and setup basic audio engine
     init() {
@@ -44,6 +51,9 @@ class MixedEnvironmentEngine {
         // Stop existing playback first (quick operation)
         stopAllSounds()
         
+        // Store the current environment ID
+        _currentEnvironment = environment.id
+        
         // Perform the heavy loading work in a background thread
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
@@ -61,6 +71,7 @@ class MixedEnvironmentEngine {
                 do {
                     try self.audioEngine.start()
                     self.isPlaying = true
+                    self.isPaused = false
                 } catch {
                     print("Could not start audio engine: \(error.localizedDescription)")
                 }
@@ -95,7 +106,31 @@ class MixedEnvironmentEngine {
             }
             
             isPlaying = false
+            isPaused = false
             currentLayers = []
+            _currentEnvironment = nil // Clear the current environment
+        }
+    }
+    
+    // Add pause functionality
+    func pausePlayback() {
+        if isPlaying && !isPaused {
+            audioEngine.pause()
+            isPaused = true
+            isPlaying = false
+        }
+    }
+    
+    // Add resume functionality
+    func resumePlayback() {
+        if isPaused {
+            do {
+                try audioEngine.start()
+                isPlaying = true
+                isPaused = false
+            } catch {
+                print("Could not resume audio engine: \(error.localizedDescription)")
+            }
         }
     }
     
@@ -350,8 +385,8 @@ class MixedEnvironmentEngine {
     
     // Toggle a layer on/off
     func toggleLayer(id: UUID, active: Bool) {
-        if let sourceNode = sourceNodes[id],
-           let balanceNode = balanceNodes[id],
+        if let _ = sourceNodes[id],
+           let _ = balanceNodes[id],
            let gainNode = gainNodes[id] {
             
             if !active {

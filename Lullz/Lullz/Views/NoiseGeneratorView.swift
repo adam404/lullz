@@ -17,7 +17,6 @@ struct NoiseGeneratorView: View {
     @State private var selectedNoise: AudioManager.NoiseType
     @State private var isUnmuting = false
     @State private var previousVolume: Float = 0.5
-    @State private var showingCategoryPicker = false
     
     // Add this to handle notification from InformationView
     init() {
@@ -40,56 +39,52 @@ struct NoiseGeneratorView: View {
                         // Dynamic visualization
                         DynamicWaveVisualizer(noiseType: audioManager.currentNoiseType)
                             .padding([.horizontal, .vertical], 10)
-                        
-                        // Overlay controls
-                        VStack {
-                            Spacer()
-                            
-                            // Play/pause and volume controls
-                            HStack(spacing: 20) {
-                                // Mute/unmute button
-                                Button(action: {
-                                    toggleMute()
-                                }) {
-                                    Image(systemName: audioManager.volume > 0 ? "speaker.wave.2.fill" : "speaker.slash.fill")
-                                        .font(.system(size: 22))
-                                        .foregroundColor(.white)
-                                        .padding(12)
-                                        .background(Circle().fill(Color.accentColor.opacity(0.8)))
-                                }
-                                
-                                // Play/pause button
-                                Button(action: {
-                                    audioManager.togglePlayback()
-                                }) {
-                                    Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
-                                        .font(.system(size: 30))
-                                        .foregroundColor(.white)
-                                        .padding(15)
-                                        .background(Circle().fill(Color.accentColor))
-                                }
-                                .accessibilityIdentifier("playPauseButton")
-                                .accessibilityLabel(audioManager.isPlaying ? "Pause" : "Play")
-                                .shadow(radius: 3)
-                                
-                                // Volume indicator
-                                if audioManager.volume > 0 {
-                                    HStack(spacing: 4) {
-                                        ForEach(0..<Int(audioManager.volume * 5), id: \.self) { _ in
-                                            RoundedRectangle(cornerRadius: 2)
-                                                .frame(width: 4, height: 16)
-                                                .foregroundColor(.white.opacity(0.8))
-                                        }
-                                    }
-                                    .padding(8)
-                                    .background(Capsule().fill(Color.black.opacity(0.5)))
-                                }
-                            }
-                            .padding(.bottom, 15)
-                        }
                     }
                     .frame(height: 200)
                     .padding(.horizontal)
+                    
+                    // Play/pause and volume controls - moved outside the visualizer
+                    HStack(spacing: 20) {
+                        // Mute/unmute button
+                        Button(action: {
+                            toggleMute()
+                        }) {
+                            Image(systemName: audioManager.volume > 0 ? "speaker.wave.2.fill" : "speaker.slash.fill")
+                                .font(.system(size: 22))
+                                .foregroundColor(.white)
+                                .padding(12)
+                                .background(Circle().fill(Color.accentColor.opacity(0.8)))
+                        }
+                        
+                        // Play/pause button
+                        Button(action: {
+                            audioManager.togglePlayback()
+                        }) {
+                            Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
+                                .font(.system(size: 30))
+                                .foregroundColor(.white)
+                                .padding(15)
+                                .background(Circle().fill(Color.accentColor))
+                        }
+                        .accessibilityIdentifier("playPauseButton")
+                        .accessibilityLabel(audioManager.isPlaying ? "Pause" : "Play")
+                        .shadow(radius: 3)
+                        
+                        // Volume indicator
+                        if audioManager.volume > 0 {
+                            HStack(spacing: 4) {
+                                ForEach(0..<Int(audioManager.volume * 5), id: \.self) { _ in
+                                    RoundedRectangle(cornerRadius: 2)
+                                        .frame(width: 4, height: 16)
+                                        .foregroundColor(.white.opacity(0.8))
+                                }
+                            }
+                            .padding(8)
+                            .background(Capsule().fill(Color.black.opacity(0.5)))
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 10)
                     
                     // Volume slider
                     VStack(spacing: 8) {
@@ -100,6 +95,12 @@ struct NoiseGeneratorView: View {
                             Slider(value: $audioManager.volume, in: 0...1) { editing in
                                 if !editing && isUnmuting {
                                     isUnmuting = false
+                                }
+                                
+                                // Ensure audio is not accidentally muted when changing category
+                                if audioManager.volume > 0 && !audioManager.isPlaying {
+                                    // User has set volume above zero, but audio is not playing
+                                    // Don't auto-start here, just ensure volume state is saved
                                 }
                             }
                             .accessibilityIdentifier("volumeControl")
@@ -120,217 +121,82 @@ struct NoiseGeneratorView: View {
                         ActiveTimerIndicatorView()
                     }
                     
-                    // Show different controls based on sound category
-                    if audioManager.currentSoundCategory == .noise {
-                        // Noise type selection
-                        VStack(alignment: .leading) {
-                            Text("Select Noise Type")
-                                .font(.headline)
-                                .padding(.leading)
-                            
-                            NoiseGridSelectionView(selectedNoise: $selectedNoise)
-                                .onChange(of: selectedNoise) { newValue in
-                                    // Just update the noise type without toggling playback
-                                    audioManager.currentNoiseType = newValue
-                                }
-                        }
+                    // Noise type selection
+                    VStack(alignment: .leading) {
+                        Text("Select Noise Type")
+                            .font(.headline)
+                            .padding(.leading)
                         
-                        // Balance and delay controls
-                        VStack(spacing: 20) {
-                            Text("Audio Controls")
-                                .font(.headline)
-                            
-                            // Balance slider
-                            ControlSliderView(
-                                value: $audioManager.balance,
-                                range: 0...1,
-                                label: "Balance",
-                                iconLeading: "l.circle",
-                                iconTrailing: "r.circle",
-                                accessibilityId: "balanceControl"
-                            )
-                            
-                            // Left delay slider
-                            ControlSliderView(
-                                value: $audioManager.leftDelay,
-                                range: 0...1,
-                                label: "Left Ear Delay",
-                                textLeading: "0ms",
-                                textTrailing: "500ms",
-                                accessibilityId: "leftDelayControl"
-                            )
-                            
-                            // Right delay slider
-                            ControlSliderView(
-                                value: $audioManager.rightDelay,
-                                range: 0...1,
-                                label: "Right Ear Delay",
-                                textLeading: "0ms",
-                                textTrailing: "500ms",
-                                accessibilityId: "rightDelayControl"
-                            )
+                        NoiseGridSelectionView(selectedNoise: $selectedNoise)
+                            .onChange(of: selectedNoise) { oldValue, newValue in
+                                // Just update the noise type without toggling playback
+                                audioManager.currentNoiseType = newValue
+                            }
+                    }
+                    
+                    // Balance and delay controls
+                    VStack(spacing: 20) {
+                        Text("Audio Controls")
+                            .font(.headline)
+                        
+                        // Balance slider
+                        ControlSliderView(
+                            value: $audioManager.balance,
+                            range: 0...1,
+                            label: "Balance",
+                            iconLeading: "l.circle",
+                            iconTrailing: "r.circle",
+                            accessibilityId: "balanceControl"
+                        )
+                        
+                        // Left delay slider
+                        ControlSliderView(
+                            value: $audioManager.leftDelay,
+                            range: 0...1,
+                            label: "Left Ear Delay",
+                            textLeading: "0ms",
+                            textTrailing: "500ms",
+                            accessibilityId: "leftDelayControl"
+                        )
+                        
+                        // Right delay slider
+                        ControlSliderView(
+                            value: $audioManager.rightDelay,
+                            range: 0...1,
+                            label: "Right Ear Delay",
+                            textLeading: "0ms",
+                            textTrailing: "500ms",
+                            accessibilityId: "rightDelayControl"
+                        )
+                    }
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color.secondary.opacity(0.1))
+                    )
+                    .padding(.horizontal)
+                    
+                    // Noise info button
+                    Button(action: {
+                        showingInfo = true
+                    }) {
+                        HStack {
+                            Image(systemName: "info.circle")
+                            Text("About \(selectedNoise.rawValue) Noise")
                         }
                         .padding()
                         .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(Color.secondary.opacity(0.1))
+                            Capsule()
+                                .fill(Color.secondary.opacity(0.2))
                         )
-                        .padding(.horizontal)
-                        
-                        // Noise info button
-                        Button(action: {
-                            showingInfo = true
-                        }) {
-                            HStack {
-                                Image(systemName: "info.circle")
-                                Text("About \(selectedNoise.rawValue) Noise")
-                            }
-                            .padding()
-                            .background(
-                                Capsule()
-                                    .fill(Color.secondary.opacity(0.2))
-                            )
-                        }
-                        .padding(.vertical)
-                    } else {
-                        // Binaural beats controls
-                        VStack(alignment: .leading, spacing: 20) {
-                            Text("Binaural Beats")
-                                .font(.headline)
-                                .padding(.leading)
-                            
-                            // Binaural presets
-                            VStack(alignment: .leading) {
-                                Text("Select Preset")
-                                    .font(.subheadline)
-                                    .padding(.leading)
-                                
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: 15) {
-                                        ForEach(BinauralBeatsGenerator.BinauralPreset.allCases, id: \.self) { preset in
-                                            BinauralPresetButton(
-                                                preset: preset,
-                                                isSelected: audioManager.currentBinauralPreset == preset,
-                                                action: {
-                                                    audioManager.currentBinauralPreset = preset
-                                                }
-                                            )
-                                        }
-                                    }
-                                    .padding(.horizontal)
-                                }
-                            }
-                            
-                            // Binaural volume
-                            VStack(spacing: 8) {
-                                HStack {
-                                    Text("Binaural Volume")
-                                        .font(.subheadline)
-                                    Spacer()
-                                }
-                                .padding(.horizontal)
-                                
-                                ControlSliderView(
-                                    value: $audioManager.binauralVolume,
-                                    range: 0...1,
-                                    label: "Volume",
-                                    iconLeading: "waveform",
-                                    iconTrailing: "waveform.badge.plus",
-                                    accessibilityId: "binauralVolumeControl"
-                                )
-                                .padding(.horizontal)
-                            }
-                            
-                            // Carrier noise toggle
-                            VStack(spacing: 15) {
-                                Toggle("Add Background Noise", isOn: $audioManager.carrierNoiseEnabled)
-                                    .padding(.horizontal)
-                                
-                                if audioManager.carrierNoiseEnabled {
-                                    ControlSliderView(
-                                        value: $audioManager.carrierNoiseVolume,
-                                        range: 0...1,
-                                        label: "Background Noise Volume",
-                                        iconLeading: "speaker.fill",
-                                        iconTrailing: "speaker.wave.3.fill",
-                                        accessibilityId: "carrierNoiseVolumeControl"
-                                    )
-                                    .padding(.horizontal)
-                                    
-                                    // Noise type picker for carrier noise
-                                    Picker("Background Noise Type", selection: $audioManager.currentNoiseType) {
-                                        ForEach(AudioManager.NoiseType.allCases) { type in
-                                            Text(type.rawValue).tag(type)
-                                        }
-                                    }
-                                    .pickerStyle(MenuPickerStyle())
-                                    .padding(.horizontal)
-                                }
-                            }
-                            .padding()
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(Color.secondary.opacity(0.1))
-                            )
-                            .padding(.horizontal)
-                            
-                            // Info about binaural beats
-                            Button(action: {
-                                // Show binaural info (you could create a dedicated view for this)
-                                // For now we'll reuse the existing info sheet
-                                showingInfo = true
-                            }) {
-                                HStack {
-                                    Image(systemName: "info.circle")
-                                    Text("About Binaural Beats")
-                                }
-                                .padding()
-                                .background(
-                                    Capsule()
-                                        .fill(Color.secondary.opacity(0.2))
-                                )
-                            }
-                            .padding(.vertical)
-                            .padding(.horizontal)
-                        }
                     }
+                    .padding(.vertical)
                     
                     Spacer(minLength: 20)
                 }
             }
             .navigationTitle("Lullz")
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
-                        showingCategoryPicker = true
-                    }) {
-                        HStack {
-                            Text(audioManager.currentSoundCategory.rawValue)
-                            Image(systemName: "chevron.down")
-                        }
-                        .font(.headline)
-                    }
-                    .confirmationDialog(
-                        "Select Sound Type",
-                        isPresented: $showingCategoryPicker
-                    ) {
-                        ForEach(AudioManager.SoundCategory.allCases) { category in
-                            Button(category.rawValue) {
-                                audioManager.currentSoundCategory = category
-                                
-                                // If switching to binaural and we're playing noise, 
-                                // set a suitable binaural preset
-                                if category == .binaural && 
-                                   audioManager.currentSoundCategory == .noise {
-                                    audioManager.currentBinauralPreset = .relaxation
-                                }
-                            }
-                        }
-                    } message: {
-                        Text("Choose sound type")
-                    }
-                }
-                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack {
                         Button(action: {
@@ -380,17 +246,12 @@ struct NoiseGeneratorView: View {
                 // Set selected noise to match the current audio manager setting
                 selectedNoise = audioManager.currentNoiseType
                 
-                // Start playing by default but muted
-                if !audioManager.isPlaying {
-                    // Save current volume setting
-                    previousVolume = audioManager.volume
-                    
-                    // Start muted
-                    audioManager.volume = 0
-                    
-                    // Start playback
-                    audioManager.togglePlayback()
-                }
+                // Set sound category to noise
+                audioManager.currentSoundCategory = .noise
+                
+                // Don't auto-play on boot
+                // Save current volume setting in case we need it later
+                previousVolume = audioManager.volume > 0 ? audioManager.volume : 0.5
             }
         }
     }
@@ -401,27 +262,21 @@ struct NoiseGeneratorView: View {
             previousVolume = audioManager.volume
             
             // Mute gradually
-            withAnimation(.easeOut(duration: 0.5)) {
+            withAnimation(.easeOut(duration: 0.2)) {
                 audioManager.volume = 0
             }
         } else {
-            // Unmute and gradually increase volume
-            isUnmuting = true
+            // Unmute to the previous level or a reasonable default
+            let targetVolume = previousVolume > 0 ? previousVolume : 0.5
             
-            // Start a timer to ramp up volume gradually
-            let targetVolume = max(0.5, previousVolume)
-            let steps = 10
-            let stepDuration = 0.06
+            // Unmute gradually
+            withAnimation(.easeIn(duration: 0.2)) {
+                audioManager.volume = targetVolume
+            }
             
-            for step in 1...steps {
-                DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration * Double(step)) {
-                    audioManager.volume = Float(Double(step) / Double(steps)) * targetVolume
-                    
-                    // When complete
-                    if step == steps {
-                        isUnmuting = false
-                    }
-                }
+            // Ensure playback is active if we're unmuting
+            if !audioManager.isPlaying {
+                audioManager.playSound()
             }
         }
     }
@@ -449,14 +304,17 @@ struct NoiseGeneratorView: View {
         NotificationCenter.default.addObserver(
             forName: Notification.Name("TryNoiseType"),
             object: nil,
-            queue: .main) { notification in
+            queue: .main) { [self] notification in
                 if let noiseType = notification.object as? AudioManager.NoiseType {
-                    // Set the noise type and play
-                    DispatchQueue.main.async {
+                    // Run this on the main thread after a short delay to ensure UI is updated
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        // Set the noise type and update UI
                         self.audioManager.currentNoiseType = noiseType
                         self.selectedNoise = noiseType
+                        
+                        // Start playback if not already playing
                         if !self.audioManager.isPlaying {
-                            audioManager.togglePlayback()
+                            self.audioManager.playSound()
                         }
                     }
                 }

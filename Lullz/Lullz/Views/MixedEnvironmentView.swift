@@ -66,10 +66,8 @@ struct MixedEnvironmentView: View {
                 EnvironmentPlayerView(environment: environment, mixedEngine: mixedEngine)
             }
             .onAppear {
-                // Add a small delay to give time for the database to load
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    isLoading = false
-                }
+                // Remove the artificial delay and set isLoading based on environment availability
+                isLoading = environments.isEmpty
                 
                 print("MixedEnvironmentView appeared, environments count: \(environments.count)")
                 
@@ -80,6 +78,10 @@ struct MixedEnvironmentView: View {
                     queue: .main) { _ in
                         showingResetAlert = true
                     }
+            }
+            .onChange(of: environments.count) { _, newCount in
+                // Update loading state when environments become available
+                isLoading = newCount == 0
             }
             .alert("Database Reset", isPresented: $showingResetAlert) {
                 Button("OK") { }
@@ -107,7 +109,7 @@ struct MixedEnvironmentView: View {
                 .scaleEffect(1.5)
                 .tint(.white)
             
-            Text("Loading environments...")
+            Text("Creating your sound universe...")
                 .font(.headline)
                 .foregroundColor(.white)
         }
@@ -688,7 +690,7 @@ struct EnvironmentPlayerView: View {
                             animationActive = true
                         }
                     }
-                    .onChange(of: isPlaying) { newValue in
+                    .onChange(of: isPlaying) { oldValue, newValue in
                         animationActive = newValue
                     }
                 
@@ -710,9 +712,13 @@ struct EnvironmentPlayerView: View {
                 // Play button
                 Button(action: {
                     if isPlaying {
-                        mixedEngine.stopAllSounds()
+                        mixedEngine.pausePlayback()
                     } else {
-                        mixedEngine.playEnvironment(environment)
+                        if mixedEngine.currentEnvironment == environment.id {
+                            mixedEngine.resumePlayback()
+                        } else {
+                            mixedEngine.playEnvironment(environment)
+                        }
                     }
                     isPlaying.toggle()
                 }) {
@@ -741,7 +747,7 @@ struct EnvironmentPlayerView: View {
                             .frame(width: 80, height: 80)
                             .shadow(color: shadowColor, radius: shadowRadius, x: 0, y: 2)
                         
-                        Image(systemName: isPlaying ? "stop.fill" : "play.fill")
+                        Image(systemName: isPlaying ? "pause.fill" : "play.fill")
                             .font(.system(size: 30, weight: .bold))
                             .foregroundColor(.white)
                     }
@@ -841,8 +847,8 @@ struct LayerCard: View {
                     .font(.headline)
                     .foregroundColor(layer.isActive ? .white : .gray)
                 
-                if layer.modulation != nil && layer.modulation != .none {
-                    Text("Modulation: \(layer.modulation?.rawValue.capitalized ?? "None")")
+                if let modulation = layer.modulation, modulation != ModulationType.none {
+                    Text("Modulation: \(modulation.rawValue.capitalized)")
                         .font(.caption)
                         .foregroundColor(layer.isActive ? .white.opacity(0.7) : .gray.opacity(0.7))
                 }
