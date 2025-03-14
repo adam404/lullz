@@ -13,7 +13,7 @@ import SwiftData
 import UIKit
 #endif
 
-class AudioManager: ObservableObject {
+class AudioManagerImpl: AudioManagerProtocol {
     // Noise type enum
     enum NoiseType: String, CaseIterable, Identifiable {
         case white = "White"
@@ -80,11 +80,18 @@ class AudioManager: ObservableObject {
     
     // Published properties for UI binding
     @Published var isPlaying = false
-    @Published var volume: Float = 0.5 {
+    @Published var volume: Double = 0.5 {
         didSet {
-            audioEngine.mainMixerNode.outputVolume = volume
+            audioEngine.mainMixerNode.outputVolume = Float(volume)
+            // Update isMuted state based on volume
+            isMuted = (volume <= 0)
+            
+            // Save last volume setting to UserDefaults
+            UserDefaults.standard.set(volume, forKey: "lastVolumeLevel")
         }
     }
+    @Published var isMuted: Bool = false
+    @Published var lastVolume: Double = 0.5
     @Published var balance: Float = 0.5 {
         didSet {
             updateBalance()
@@ -183,7 +190,7 @@ class AudioManager: ObservableObject {
     // Split setup into two parts - basic for immediate use and detailed for background
     private func setupBasicAudioEngine() {
         // Set initial volume - this is a quick operation
-        audioEngine.mainMixerNode.outputVolume = volume
+        audioEngine.mainMixerNode.outputVolume = Float(volume)
     }
     
     private func completeAudioEngineSetup() {
@@ -245,11 +252,12 @@ class AudioManager: ObservableObject {
                 
                 for frame in 0..<Int(frameCount) {
                     // Generate noise based on selected type
+                    let white = Float.random(in: -0.5...0.5)
                     var sample: Float = 0.0
                     
                     switch self.currentNoiseType {
                     case .white:
-                        sample = self.generateWhiteNoise()
+                        sample = white
                     case .pink:
                         sample = self.generatePinkNoise()
                     case .brown:
@@ -398,7 +406,7 @@ class AudioManager: ObservableObject {
     private var pinkNoiseBuffer = [Float](repeating: 0.0, count: 7)
     private func generatePinkNoise() -> Float {
         // Pink noise approximation using Voss algorithm
-        var white = Float.random(in: -0.5...0.5)
+        let white = Float.random(in: -0.5...0.5)
         var pink = white
         
         for i in 0..<pinkNoiseBuffer.count {
@@ -746,20 +754,19 @@ class AudioManager: ObservableObject {
     
     // Add this method to AudioManager
     func createDefaultEnvironments() {
-        // Use a background thread to handle this work
+        // Fixed to properly handle ModelContext on MainActor
         Task {
-            let modelContext = await SwiftDataModel.shared.modelContainer.mainContext
-            
-            // Check if we already have presets
-            let descriptor = FetchDescriptor<MixedEnvironment>(predicate: #Predicate { $0.isPreset })
-            
-            // Fetch on main thread to avoid SwiftData threading issues
-            if let existingPresets = try? await modelContext.fetch(descriptor), existingPresets.isEmpty {
-                // Create environments in the background
-                let environments = self.buildDefaultEnvironments()
+            // Move all ModelContext operations to the MainActor
+            await MainActor.run {
+                let modelContext = SwiftDataModel.shared.modelContainer.mainContext
                 
-                // Insert them on the main thread
-                await MainActor.run {
+                // Check if we already have presets
+                let descriptor = FetchDescriptor<MixedEnvironment>(predicate: #Predicate { $0.isPreset })
+                
+                if let existingPresets = try? modelContext.fetch(descriptor), existingPresets.isEmpty {
+                    // Create environments
+                    let environments = self.buildDefaultEnvironments()
+                    
                     // Add presets to the model context
                     for environment in environments {
                         modelContext.insert(environment)
@@ -1127,4 +1134,31 @@ class AudioManager: ObservableObject {
             }
         }
     }
-} 
+
+    // Add mute/unmute functionality
+    func toggleMute() {
+        if volume > 0 {
+            // Store current volume and mute
+            lastVolume = volume
+            volume = 0
+            isMuted = true
+        } else {
+            // Restore previous volume
+            volume = lastVolume > 0 ? lastVolume : 0.5
+            isMuted = false
+        }
+    }
+
+    // Initialize with last volume setting
+    func restoreVolumeSettings() {
+        if let savedVolume = UserDefaults.standard.object(forKey: "lastVolumeLevel") as? Double {
+            volume = savedVolume
+        }
+    }
+    
+    // Create a singleton instance for global access
+    static let shared = AudioManagerImpl()
+}
+
+// Remove the typealias that's causing circular references
+// typealias AudioManager = AudioManagerImpl 
