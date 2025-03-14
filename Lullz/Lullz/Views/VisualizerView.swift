@@ -2,7 +2,7 @@
 //  VisualizerView.swift
 //  Lullz
 //
-//  Created by Adam Scott on 3/1/25.
+//  Created by Adam Scott on 3/9/25.
 //
 
 import SwiftUI
@@ -18,7 +18,7 @@ enum VisualizationType: String, CaseIterable, Identifiable {
 }
 
 struct VisualizerView: View {
-    @EnvironmentObject var audioManager: AudioManager
+    @EnvironmentObject var audioManager: AudioManagerImpl
     @AppStorage("visualizerType") private var visualizerType: VisualizationType = .dynamic
     @State private var showingVisTypeSelection = false
     
@@ -84,6 +84,10 @@ struct VisualizerView: View {
         } message: {
             Text("Choose visualization style")
         }
+        .onAppear {
+            // Verify that AudioManagerImpl is provided
+            print("VisualizerView received audioManager: \(audioManager)")
+        }
     }
     
     @ViewBuilder
@@ -101,5 +105,12 @@ struct VisualizerView: View {
         case .none:
             EmptyView()
         }
+    }
+}
+
+#Preview {
+    NavigationStack {
+        VisualizerView()
+            .environmentObject(AudioManagerImpl.shared)
     }
 } 

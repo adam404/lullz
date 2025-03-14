@@ -11,7 +11,7 @@ import SwiftData
 struct MixedEnvironmentView: View {
     @EnvironmentObject var audioManager: AudioManager
     @Environment(\.modelContext) private var modelContext
-    @Query private var environments: [MixedEnvironment]
+    @State private var environments: [MixedEnvironment] = []
     
     @State private var selectedEnvironment: MixedEnvironment?
     @State private var isPlaying = false
@@ -52,11 +52,13 @@ struct MixedEnvironmentView: View {
                     .buttonStyle(ScaleButtonStyle())
                 }
             }
-            .sheet(isPresented: $showingNewEnvironmentSheet) {
+            .sheet(isPresented: $showingNewEnvironmentSheet, onDismiss: {
+                fetchEnvironments()
+            }) {
                 MixedEnvironmentEditorView(mode: .create)
             }
             .sheet(isPresented: $showingEditSheet, onDismiss: {
-                // Refresh selected environment if needed
+                fetchEnvironments()
             }) {
                 if let environment = selectedEnvironment {
                     MixedEnvironmentEditorView(mode: .edit(environment))
@@ -65,13 +67,9 @@ struct MixedEnvironmentView: View {
             .sheet(item: $selectedEnvironment) { environment in
                 EnvironmentPlayerView(environment: environment, mixedEngine: mixedEngine)
             }
-            .onAppear {
-                // Remove the artificial delay and set isLoading based on environment availability
-                isLoading = environments.isEmpty
+            .task {
+                fetchEnvironments()
                 
-                print("MixedEnvironmentView appeared, environments count: \(environments.count)")
-                
-                // Register for database reset completed notification
                 NotificationCenter.default.addObserver(
                     forName: Notification.Name("DatabaseResetComplete"),
                     object: nil,
@@ -79,14 +77,35 @@ struct MixedEnvironmentView: View {
                         showingResetAlert = true
                     }
             }
-            .onChange(of: environments.count) { _, newCount in
-                // Update loading state when environments become available
-                isLoading = newCount == 0
-            }
             .alert("Database Reset", isPresented: $showingResetAlert) {
                 Button("OK") { }
             } message: {
                 Text("The database has been reset. Please restart the app to complete the process.")
+            }
+        }
+    }
+    
+    private func fetchEnvironments() {
+        Task {
+            do {
+                await MainActor.run {
+                    isLoading = true
+                }
+                
+                let descriptor = FetchDescriptor<MixedEnvironment>()
+                let fetchedEnvironments = try modelContext.fetch(descriptor)
+                
+                await MainActor.run {
+                    self.environments = fetchedEnvironments
+                    isLoading = environments.isEmpty
+                    print("MixedEnvironmentView fetched environments, count: \(environments.count)")
+                }
+            } catch {
+                print("Error fetching environments: \(error.localizedDescription)")
+                await MainActor.run {
+                    self.environments = []
+                    isLoading = false
+                }
             }
         }
     }
@@ -141,7 +160,6 @@ struct MixedEnvironmentView: View {
                 .padding(.horizontal)
             
             Button(action: {
-                // Request app to restart database
                 NotificationCenter.default.post(name: Notification.Name("RequestDatabaseReset"), object: nil)
             }) {
                 HStack {

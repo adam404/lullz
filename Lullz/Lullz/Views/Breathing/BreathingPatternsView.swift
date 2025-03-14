@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct BreathingPatternsView: View {
-    @EnvironmentObject var audioManager: AudioManager
+    @EnvironmentObject var audioManager: AudioManagerImpl
     @Environment(\.modelContext) private var modelContext
     @Query private var patterns: [BreathingPattern]
     
@@ -187,6 +187,6 @@ struct BreathingPatternsView: View {
 
 #Preview {
     BreathingPatternsView()
-        .environmentObject(AudioManager())
+        .environmentObject(AudioManagerImpl())
         .modelContainer(for: BreathingPattern.self, inMemory: true)
 } 

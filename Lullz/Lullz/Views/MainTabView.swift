@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MainTabView: View {
-    @EnvironmentObject var audioManager: AudioManager
+    @EnvironmentObject var audioManager: AudioManagerImpl
     @State private var selectedTab = 0
     
     var body: some View {
@@ -20,7 +20,7 @@ struct MainTabView: View {
                 .tag(0)
                 .onAppear {
                     // Ensure sound category is set to noise when this tab is selected
-                    audioManager.currentSoundCategory = .noise
+                    audioManager.currentSoundCategory = AudioManagerImpl.SoundCategory.noise
                 }
             
             LazyView(BinauralBeatsView())
@@ -30,7 +30,7 @@ struct MainTabView: View {
                 .tag(1)
                 .onAppear {
                     // Ensure sound category is set to binaural when this tab is selected
-                    audioManager.currentSoundCategory = .binaural
+                    audioManager.currentSoundCategory = AudioManagerImpl.SoundCategory.binaural
                 }
             
             LazyView(MixedEnvironmentView())
@@ -89,7 +89,7 @@ struct MainTabView: View {
             queue: .main
         ) { notification in
             // If playback started and it's binaural, switch to binaural tab
-            if let category = notification.object as? AudioManager.SoundCategory,
+            if let category = notification.object as? AudioManagerImpl.SoundCategory,
                category == .binaural && selectedTab != 1 {
                 // Only auto-switch if explicitly requested
             }
@@ -112,5 +112,5 @@ struct LazyView<Content: View>: View {
 
 #Preview {
     MainTabView()
-        .environmentObject(AudioManager())
+        .environmentObject(AudioManagerImpl.shared)
 } 

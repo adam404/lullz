@@ -5,27 +5,38 @@ Lullz is a scientifically-informed background sound generator app designed to he
 ## Features
 
 ### Core Sound Generation
-- **Multiple Noise Types**: Choose between white, pink, and brown noise, each with distinct frequency characteristics
+
+- **Multiple Noise Types**: Choose between white, pink, brown, blue, violet, grey, and green noise, each with distinct frequency characteristics
+- **Binaural Beats**: Generate binaural beats with customizable frequencies for different cognitive states
+- **Mixed Environments**: Combine multiple sound layers for rich, customized soundscapes
 - **High-Quality Audio**: Clean, consistent sound generation optimized for headphone use
 - **Background Audio**: Continues playing when app is in the background
 
 ### Advanced Audio Controls
+
 - **Balance Adjustment**: Fine-tune the left/right balance for personalized spatial sound
 - **Independent Ear Delay**: Apply separate delay settings to each ear for unique psychoacoustic effects
 - **Volume Control**: Precise volume adjustment with smooth transitions
+- **Floating Volume Control**: Access volume controls from anywhere in the app
 
 ### User Experience
+
 - **Save Custom Profiles**: Create, name, and save your favorite sound configurations
 - **Profile Management**: Browse, edit, and delete saved profiles
+- **Sleep Timer**: Set customizable timers to automatically stop playback
+- **Visualizers**: Visual representations of the active sounds for a multisensory experience
+- **Breathing Exercises**: Guided breathing patterns with visual and audio cues
 - **Intuitive Interface**: Clean, accessible design with light and dark mode support
 - **Accessibility**: Full VoiceOver support and dynamic text sizing
 
 ### Scientific Information
+
 - **Educational Content**: Learn about the science behind different noise types
-- **Sound Science Section**: Detailed explanations of white, pink, and brown noise characteristics
+- **Sound Science Section**: Detailed explanations of various noise characteristics
 - **Research References**: Citations to scientific studies on sound and its effects
 
 ### Legal Compliance
+
 - **Clear Disclaimers**: Transparent about non-medical nature of the application
 - **Privacy Policy**: Comprehensive information about data usage and privacy
 - **Terms of Service**: Clear user agreement documentation
@@ -35,8 +46,28 @@ Lullz is a scientifically-informed background sound generator app designed to he
 Lullz is built on acoustic research showing how different noise profiles can affect concentration, relaxation, and sleep quality. The app features:
 
 - **White Noise**: Equal power across all frequencies, helpful for masking environmental sounds
-- **Pink Noise**: Power decreases as frequency increases, often described as more "natural" sounding
-- **Brown Noise**: Power decreases more rapidly at higher frequencies, creating a deeper, richer sound
+- **Pink Noise**: Power decreases as frequency increases (1/f spectrum), often described as more natural sounding
+- **Brown Noise**: Power decreases more rapidly at higher frequencies (1/f² spectrum), creating a deeper, richer sound
+- **Blue Noise**: Power increases with frequency (f¹ spectrum), emphasizing higher frequencies for focus and alertness
+- **Violet Noise**: Power increases more steeply with frequency (f² spectrum), used in some tinnitus treatments
+- **Grey Noise**: Psychoacoustically engineered noise that sounds equally loud at all frequencies to human ears
+- **Green Noise**: Midrange-focused noise, similar to the ambient sounds of nature
+- **Binaural Beats**: Two slightly different frequencies create a "beat" effect when heard through separate ears, potentially influencing brainwave states
+
+## Architecture
+
+Lullz follows the Model-View-ViewModel (MVVM) architecture pattern, providing a clean separation of concerns and improved maintainability. The architecture consists of:
+
+- **Models**: Core data structures and business logic
+- **Views**: SwiftUI views responsible for UI rendering
+- **ViewModels**: Intermediate layer handling presentation logic and state management
+
+For more detailed information about the app's architecture, please refer to our documentation:
+
+- [Architecture Guide](docs/architecture.md) - Overview of the MVVM architecture
+- [Implementation Status](docs/implementation-status.md) - Details about implementation specifics
+- [Migration Plan](docs/migration-plan.md) - Plan for migrating components to MVVM
+- [TODO List](docs/TODO.md) - Current development tasks and priorities
 
 ## Important Disclaimers
 
@@ -46,15 +77,29 @@ This application should not be used as a substitute for professional medical adv
 
 ## Installation
 
-Lullz is available on the App Store for iOS devices running iOS 14.0 or later. Compatible with iPhone and iPad.
+Lullz is available on the App Store for iOS devices running iOS 16.0 or later. Compatible with iPhone and iPad.
 
 ## Getting Started
 
 1. Download and install Lullz from the App Store
 2. Launch the app and explore different noise types using the main selector
 3. Adjust volume, balance, and delay controls to customize your experience
-4. Save your favorite configurations as profiles for quick access
-5. Visit the Information tab to learn more about the science behind different sounds
+4. Try the binaural beats for different mental states
+5. Experiment with mixed environment presets for rich soundscapes
+6. Set a sleep timer for automatic playback cessation
+7. Save your favorite configurations as profiles for quick access
+8. Visit the Information tab to learn more about the science behind different sounds
+
+## Development
+
+If you're interested in contributing to Lullz, please review our architecture documentation in the `docs/` folder. The project uses SwiftUI, SwiftData, and follows the MVVM architecture pattern.
+
+### Setup
+
+1. Clone the repository
+2. Open the Xcode project
+3. Install required dependencies
+4. Build and run
 
 ## Support & Feedback
 
@@ -66,4 +111,4 @@ Your privacy is important to us. Lullz does not collect or share personal inform
 
 ## License
 
-© 2025 HomeTune. All rights reserved. 
+© 2025 HomeTune. All rights reserved.

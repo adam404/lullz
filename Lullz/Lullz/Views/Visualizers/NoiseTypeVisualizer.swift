@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct NoiseTypeVisualizer: View {
-    let noiseType: AudioManager.NoiseType
+    let noiseType: AudioManagerImpl.NoiseType
     let isPlaying: Bool
     @State private var phase: CGFloat = 0
     
@@ -326,7 +326,7 @@ struct NoiseTypeVisualizer: View {
         Color.black
             .ignoresSafeArea()
         
-        NoiseTypeVisualizer(noiseType: .pink, isPlaying: true)
+        NoiseTypeVisualizer(noiseType: AudioManagerImpl.NoiseType.pink, isPlaying: true)
             .frame(width: 200, height: 120)
     }
 } 

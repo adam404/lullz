@@ -1,0 +1,161 @@
+---
+description: iOS Application Development Best Practice
+globs: 
+alwaysApply: false
+---
+
+Code Structure
+
+Use Swift's latest features, including macros and protocol-oriented programming.
+
+Prefer value types (structs) over classes where possible.
+
+Follow MVVM architecture with SwiftUI.
+
+Recommended structure: Features/, Core/, UI/, Resources/.
+
+Follow Apple's Human Interface Guidelines.
+
+Consider modularization with Swift Packages for scalability.
+
+Naming Conventions
+
+Use camelCase for variables and functions, PascalCase for types.
+
+Use descriptive and clear names, following Apple's naming conventions.
+
+Boolean properties should start with is, has, or should.
+
+Methods should use verb-based names (e.g., fetchData).
+
+Swift Best Practices
+
+Strong type system and proper use of optionals.
+
+Use async/await for concurrency.
+
+Utilize Result type for error handling.
+
+Use @Observable (Swift 5.9+) instead of @StateObject where applicable.
+
+Prefer let over var when possible.
+
+Use protocol extensions for shared functionality.
+
+UI Development
+
+SwiftUI-first approach, using UIKit only when necessary.
+
+Use SF Symbols for icons.
+
+Support dark mode and dynamic type.
+
+Prefer NavigationSplitView for adaptive navigation.
+
+Use SafeArea and GeometryReader for layout flexibility.
+
+Use ScrollViewReader for scroll management.
+
+Implement proper keyboard handling.
+
+Use PhaseAnimator (iOS 17+) for smooth animations.
+
+Performance Optimization
+
+Profile with Instruments.
+
+Use LazyVStack and LazyHStack for better list performance.
+
+Cache images efficiently with AsyncImage and ImagePipeline.
+
+Optimize network requests with background priority tasks.
+
+Prefer backgroundPriority for non-UI tasks (iOS 17+).
+
+Use @MainActor for UI-related asynchronous operations.
+
+Data & State Management
+
+Use SwiftData (iOS 17+) over CoreData when applicable.
+
+Use UserDefaults for lightweight storage.
+
+Prefer Observation framework over Combine for state management.
+
+Maintain clean data flow architecture with proper dependency injection.
+
+Implement state restoration for improved user experience.
+
+Security Best Practices
+
+Encrypt sensitive data.
+
+Use Keychain for secure storage.
+
+Implement certificate pinning for secure network requests.
+
+Prefer Passkeys over traditional authentication methods.
+
+Enforce App Transport Security (ATS).
+
+Implement robust input validation.
+
+Testing & Quality Assurance
+
+Use XCTest for unit tests and XCUITest for UI tests.
+
+Test common user flows and edge cases.
+
+Implement performance benchmarks in CI/CD pipeline.
+
+Perform accessibility testing using Perception Framework (iOS 17+).
+
+Utilize Playgrounds for rapid prototyping.
+
+Essential Features
+
+Support deep linking.
+
+Implement push notifications.
+
+Ensure background task handling.
+
+Support localization.
+
+Implement structured error handling.
+
+Use analytics and logging responsibly.
+
+Development Process
+
+Utilize SwiftUI previews for faster UI iteration.
+
+Follow a Git branching strategy (e.g., GitFlow or trunk-based development).
+
+Enforce a code review process.
+
+Implement a CI/CD pipeline.
+
+Maintain proper documentation.
+
+Ensure adequate unit test coverage.
+
+App Store Compliance
+
+Provide privacy descriptions for sensitive APIs.
+
+Clearly define app capabilities.
+
+Follow in-app purchase guidelines.
+
+Adhere to Apple's review guidelines.
+
+Optimize app size using App Thinning.
+
+Ensure proper code signing and distribution.
+
+References
+
+Follow Apple's Official Documentation for detailed implementation guidance.
+
+

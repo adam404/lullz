@@ -6,15 +6,46 @@
 //
 
 import SwiftUI
+import Foundation
+import AVFoundation
+import Observation
+
+@Observable
+final class DynamicWaveVisualizerState {
+    var phase: CGFloat = 0
+    var amplitude: CGFloat = 1.0
+    var waveSpeed: Double = 1.0
+    
+    func updatePhase(delta: CGFloat) {
+        phase += delta
+        if phase > 100 {
+            phase = 0
+        }
+    }
+    
+    func updateAmplitude() {
+        amplitude = CGFloat.random(in: 0.9...1.1)
+    }
+    
+    func configureForNoiseType(_ noiseType: AudioManagerImpl.NoiseType) {
+        waveSpeed = noiseType.defaultWaveSpeed
+    }
+}
 
 struct DynamicWaveVisualizer: View {
-    let noiseType: AudioManager.NoiseType
-    @State private var phase: CGFloat = 0
-    @State private var amplitude: CGFloat = 1.0
-    @State private var waveSpeed: Double = 1.0
+    private let noiseType: AudioManagerImpl.NoiseType
+    @State private var state = DynamicWaveVisualizerState()
     
-    // Timer for animation
-    let timer = Timer.publish(every: 0.016, on: .main, in: .common).autoconnect()
+    // Use a more efficient timer with background priority
+    private let timer = Timer.publish(
+        every: 0.016,
+        on: .main,
+        in: .common
+    ).autoconnect()
+    
+    init(noiseType: AudioManagerImpl.NoiseType) {
+        self.noiseType = noiseType
+    }
     
     var body: some View {
         GeometryReader { geometry in
@@ -38,10 +69,10 @@ struct DynamicWaveVisualizer: View {
                         let relativeX = x / width
                         
                         // Calculate y position based on wave parameters with safety checks
-                        let localPhase = phase * layer.speedMultiplier
+                        let localPhase = state.phase * layer.speedMultiplier
                         var y = midHeight + sin(relativeX * layer.frequency * .pi * 2 + localPhase) 
                             * layer.amplitude 
-                            * amplitude 
+                            * state.amplitude 
                             * midHeight * 0.7
                         
                         // Ensure y is a valid, finite number
@@ -61,52 +92,28 @@ struct DynamicWaveVisualizer: View {
                 }
                 
                 // Add frequency bars for certain noise types
-                if [.white, .pink, .grey].contains(noiseType) {
+                if noiseType.supportsFrequencyBars {
                     drawFrequencyBars(context: context, size: size)
                 }
             }
             .onReceive(timer) { _ in
                 // Update phase for continuous animation
-                phase += 0.03 * waveSpeed
-                if phase > 100 {
-                    phase = 0
-                }
-                
-                // Vary amplitude slightly for more organic feel
                 withAnimation(.easeInOut(duration: 1.5)) {
-                    // Ensure amplitude stays within a valid range
-                    amplitude = CGFloat.random(in: 0.9...1.1)
+                    state.updatePhase(delta: 0.03 * state.waveSpeed)
+                    state.updateAmplitude()
                 }
             }
             .onAppear {
                 // Set parameters based on noise type
-                configureParameters()
+                state.configureForNoiseType(noiseType)
+            }
+            .task(priority: .background) {
+                // Any background processing can go here
             }
         }
     }
     
-    private func configureParameters() {
-        switch noiseType {
-        case .white:
-            waveSpeed = 1.5
-        case .pink:
-            waveSpeed = 1.2
-        case .brown:
-            waveSpeed = 0.7
-        case .blue:
-            waveSpeed = 1.8
-        case .violet:
-            waveSpeed = 2.0
-        case .grey:
-            waveSpeed = 1.0
-        case .green:
-            waveSpeed = 0.9
-        case .black:
-            waveSpeed = 0.5
-        }
-    }
-    
-    private func getWaveLayers(for noiseType: AudioManager.NoiseType) -> [WaveLayer] {
+    private func getWaveLayers(for noiseType: AudioManagerImpl.NoiseType) -> [WaveLayer] {
         switch noiseType {
         case .white:
             return [
@@ -206,34 +213,13 @@ struct DynamicWaveVisualizer: View {
             guard barWidth > 0, x.isFinite, barWidth.isFinite else { continue }
             
             let rect = CGRect(x: x + 1, y: y, width: max(0, barWidth - 2), height: height)
-            let color = getColorForNoiseType(noiseType)
+            let color = noiseType.color
             
             // Draw bar
             context.fill(
                 Path(roundedRect: rect, cornerRadius: 2),
                 with: .color(color.opacity(0.5))
             )
-        }
-    }
-    
-    private func getColorForNoiseType(_ noiseType: AudioManager.NoiseType) -> Color {
-        switch noiseType {
-        case .white:
-            return .white
-        case .pink:
-            return .pink
-        case .brown:
-            return .brown
-        case .blue:
-            return .blue
-        case .violet:
-            return .purple
-        case .grey:
-            return .gray
-        case .green:
-            return .green
-        case .black:
-            return .black
         }
     }
     
@@ -248,14 +234,48 @@ struct DynamicWaveVisualizer: View {
     }
 }
 
+// MARK: - NoiseType Extensions
+private extension AudioManagerImpl.NoiseType {
+    var defaultWaveSpeed: Double {
+        switch self {
+        case .white: return 1.5
+        case .pink: return 1.2
+        case .brown: return 0.7
+        case .blue: return 1.8
+        case .violet: return 2.0
+        case .grey: return 1.0
+        case .green: return 0.9
+        case .black: return 0.5
+        }
+    }
+    
+    var supportsFrequencyBars: Bool {
+        [.white, .pink, .grey].contains(self)
+    }
+    
+    var color: Color {
+        switch self {
+        case .white: return .white
+        case .pink: return .pink
+        case .brown: return .brown
+        case .blue: return .blue
+        case .violet: return .purple
+        case .grey: return .gray
+        case .green: return .green
+        case .black: return .black
+        }
+    }
+}
+
 #Preview {
-    ZStack {
-        Color.black.opacity(0.8)
-            .ignoresSafeArea()
-        
-        DynamicWaveVisualizer(noiseType: .white)
-            .frame(height: 200)
-            .padding()
-            .environmentObject(AudioManager()) // Add environment object for preview
+    NavigationStack {
+        ZStack {
+            Color.black.opacity(0.8)
+                .ignoresSafeArea()
+            
+            DynamicWaveVisualizer(noiseType: .white)
+                .frame(height: 200)
+                .padding()
+        }
     }
 } 

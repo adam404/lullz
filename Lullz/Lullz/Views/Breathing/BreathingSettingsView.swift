@@ -43,7 +43,7 @@ struct BreathingSettingsView: View {
         self._accentColor = State(initialValue: parsedColor ?? .blue)
         
         self._backgroundNoiseEnabled = State(initialValue: pattern.backgroundNoiseType != nil)
-        self._backgroundNoiseType = State(initialValue: pattern.backgroundNoiseType ?? AudioManager.NoiseType.brown.rawValue)
+        self._backgroundNoiseType = State(initialValue: pattern.backgroundNoiseType ?? AudioManagerImpl.NoiseType.brown.rawValue)
         self._backgroundNoiseVolume = State(initialValue: pattern.backgroundNoiseVolume)
     }
     
@@ -75,7 +75,7 @@ struct BreathingSettingsView: View {
                     
                     if backgroundNoiseEnabled {
                         Picker("Noise Type", selection: $backgroundNoiseType) {
-                            ForEach(AudioManager.NoiseType.allCases) { type in
+                            ForEach(AudioManagerImpl.NoiseType.allCases) { type in
                                 Text(type.rawValue).tag(type.rawValue)
                             }
                         }

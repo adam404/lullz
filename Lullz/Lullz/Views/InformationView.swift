@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct InformationView: View {
-    @EnvironmentObject var audioManager: AudioManager
-    @State private var selectedNoiseType: AudioManager.NoiseType = .white
+    @EnvironmentObject var audioManager: AudioManagerImpl
+    @State private var selectedNoiseType: AudioManagerImpl.NoiseType = .white
     @State private var navigateToNoiseGenerator = false
     
     // Add this to handle notification from InformationView
@@ -28,7 +28,7 @@ struct InformationView: View {
                 // Custom tab bar replacing the segmented picker
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
-                        ForEach(AudioManager.NoiseType.allCases) { noiseType in
+                        ForEach(AudioManagerImpl.NoiseType.allCases) { noiseType in
                             NoiseTypeTab(
                                 noiseType: noiseType,
                                 isSelected: selectedNoiseType == noiseType,
@@ -129,30 +129,10 @@ struct InformationView: View {
                     .padding(.vertical)
                 }
                 
-                // Button to try this sound
-                Button(action: {
-                    playSelectedNoise()
-                }) {
-                    HStack {
-                        Image(systemName: "play.circle.fill")
-                            .font(.title3)
-                        Text("Try This Sound")
-                            .font(.headline)
-                    }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.accentColor)
-                    .cornerRadius(12)
-                    .shadow(color: Color.accentColor.opacity(0.4), radius: 4, x: 0, y: 2)
-                }
-                .padding(.horizontal)
-                .padding(.top, 5)
-                .padding(.bottom, 10)
-                
                 // Add the ad view at the bottom
                 AdView()
-                    .padding(.top, 5)
+                    .padding(.top, 10)
+                    .padding(.bottom, 5)
             }
             .navigationTitle("Sound Science")
             .toolbar {
@@ -170,80 +150,7 @@ struct InformationView: View {
         }
     }
     
-    private func playSelectedNoise() {
-        // First set the noise type locally
-        audioManager.currentNoiseType = selectedNoiseType
-        
-        // Then post notification for switching tabs and playing
-        NotificationCenter.default.post(
-            name: Notification.Name("TryNoiseType"), 
-            object: selectedNoiseType
-        )
-        
-        // Find the tab bar controller and switch to the first tab (more reliable approach)
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first,
-           let rootViewController = window.rootViewController {
-            
-            // Find TabView and switch to the first tab (player)
-            if let tabController = rootViewController as? UITabBarController {
-                tabController.selectedIndex = 0
-            }
-        }
-        
-        // Provide feedback that noise was selected
-        let feedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
-        feedbackGenerator.impactOccurred()
-    }
-    
-    // Custom reusable tab view component
-    struct NoiseTypeTab: View {
-        let noiseType: AudioManager.NoiseType
-        let isSelected: Bool
-        let action: () -> Void
-        
-        var body: some View {
-            Button(action: action) {
-                VStack(spacing: 6) {
-                    // Icon for each noise type
-                    Image(systemName: iconFor(noiseType: noiseType))
-                        .font(.system(size: 24))
-                        .foregroundColor(isSelected ? .accentColor : .gray)
-                    
-                    Text(noiseType.rawValue)
-                        .font(.system(size: 12, weight: isSelected ? .semibold : .regular))
-                        .foregroundColor(isSelected ? .accentColor : .gray)
-                }
-                .frame(minWidth: 70)
-                .padding(.vertical, 8)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(isSelected ? Color.accentColor.opacity(0.1) : Color.clear)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(isSelected ? Color.accentColor.opacity(0.3) : Color.clear, lineWidth: 1)
-                )
-            }
-            .buttonStyle(PlainButtonStyle())
-        }
-        
-        // Get an appropriate icon for each noise type
-        private func iconFor(noiseType: AudioManager.NoiseType) -> String {
-            switch noiseType {
-            case .white: return "waveform"
-            case .pink: return "waveform.path"
-            case .brown: return "waveform.path.badge.minus"
-            case .blue: return "waveform.path.badge.plus"
-            case .violet: return "chart.line.uptrend.xyaxis"
-            case .grey: return "waveform.path.ecg"
-            case .green: return "leaf.fill"
-            case .black: return "moon.stars.fill"
-            }
-        }
-    }
-    
-    private func benefitsFor(noiseType: AudioManager.NoiseType) -> [String] {
+    private func benefitsFor(noiseType: AudioManagerImpl.NoiseType) -> [String] {
         switch noiseType {
         case .white:
             return [
@@ -304,7 +211,7 @@ struct InformationView: View {
         }
     }
     
-    private func researchReferencesFor(noiseType: AudioManager.NoiseType) -> [String] {
+    private func researchReferencesFor(noiseType: AudioManagerImpl.NoiseType) -> [String] {
         switch noiseType {
         case .white:
             return [
@@ -354,6 +261,53 @@ struct InformationView: View {
                 "Suedfeld, P., & Kristeller, J. L. (1982). Stimulus reduction as a technique in health psychology. Health Psychology, 1(4), 337-357.",
                 "Tang, Y. Y., et al. (2015). The neuroscience of mindfulness meditation. Nature Reviews Neuroscience, 16(4), 213-225."
             ]
+        }
+    }
+    
+    // Custom reusable tab view component
+    struct NoiseTypeTab: View {
+        let noiseType: AudioManagerImpl.NoiseType
+        let isSelected: Bool
+        let action: () -> Void
+        
+        var body: some View {
+            Button(action: action) {
+                VStack(spacing: 6) {
+                    // Icon for each noise type
+                    Image(systemName: iconFor(noiseType: noiseType))
+                        .font(.system(size: 24))
+                        .foregroundColor(isSelected ? .accentColor : .gray)
+                    
+                    Text(noiseType.rawValue)
+                        .font(.system(size: 12, weight: isSelected ? .semibold : .regular))
+                        .foregroundColor(isSelected ? .accentColor : .gray)
+                }
+                .frame(minWidth: 70)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(isSelected ? Color.accentColor.opacity(0.1) : Color.clear)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(isSelected ? Color.accentColor.opacity(0.3) : Color.clear, lineWidth: 1)
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
+        }
+        
+        // Get an appropriate icon for each noise type
+        private func iconFor(noiseType: AudioManagerImpl.NoiseType) -> String {
+            switch noiseType {
+            case .white: return "waveform"
+            case .pink: return "waveform.path"
+            case .brown: return "waveform.path.badge.minus"
+            case .blue: return "waveform.path.badge.plus"
+            case .violet: return "chart.line.uptrend.xyaxis"
+            case .grey: return "waveform.path.ecg"
+            case .green: return "leaf.fill"
+            case .black: return "moon.stars.fill"
+            }
         }
     }
 }

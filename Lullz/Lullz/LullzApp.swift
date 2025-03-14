@@ -11,14 +11,18 @@ import AVFoundation
 
 // Create a setup manager class to handle App initialization
 class AppSetupManager: ObservableObject {
-    var audioManager: AudioManager
+    // Use a reference to the shared audio manager instance
+    let audioManager: AudioManagerImpl
     private var isInitialized = false
     
-    init(audioManager: AudioManager) {
+    init(audioManager: AudioManagerImpl) {
         self.audioManager = audioManager
         
         // Setup basic audio session
         setupAudioSession()
+        
+        // Restore previous volume settings
+        audioManager.restoreVolumeSettings()
         
         // Listen for database reset requests
         NotificationCenter.default.addObserver(
@@ -26,6 +30,7 @@ class AppSetupManager: ObservableObject {
             object: nil,
             queue: .main) { _ in
                 print("Database reset requested")
+                self.resetDatabase()
             }
     }
     
@@ -118,14 +123,16 @@ class AppSetupManager: ObservableObject {
 
 @main
 struct LullzApp: App {
-    // App state manager to handle audio session
-    @StateObject private var audioManager = AudioManager()
+    // Create a single instance of AudioManagerImpl to be shared throughout the app
+    @StateObject private var audioManager = AudioManagerImpl.shared
     
     // Setup manager to handle initialization and state
     @StateObject private var setupManager: AppSetupManager
     
     // Scene phase for handling app lifecycle
     @Environment(\.scenePhase) private var scenePhase
+    
+    @State private var showIntro = true
     
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
@@ -353,9 +360,9 @@ struct LullzApp: App {
     }
 
     init() {
-        // Initialize the setup manager with our managers
+        // Initialize the setup manager with our shared audio manager instance
         _setupManager = StateObject(wrappedValue: AppSetupManager(
-            audioManager: AudioManager()
+            audioManager: AudioManagerImpl.shared
         ))
     }
     
@@ -363,22 +370,41 @@ struct LullzApp: App {
     
     var body: some Scene {
         WindowGroup {
-            MainTabView()
-                .environmentObject(audioManager)
-                .sheet(isPresented: $showingLegalTerms) {
-                    LegalSectionView()
-                        .interactiveDismissDisabled()
+            ZStack {
+                MainTabView()
+                    .withFloatingVolumeControl()
+                    .environmentObject(audioManager)
+                    .environmentObject(setupManager)
+                    .modelContainer(sharedModelContainer)
+                    .opacity(showIntro ? 0 : 1)
+                
+                if showIntro {
+                    IntroAnimationView()
+                        .transition(.opacity)
+                        .zIndex(1)
+                        .onAppear {
+                            // Show intro for a shorter time (2.5 seconds) to keep it quick
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                                withAnimation(.easeOut(duration: 0.6)) {
+                                    showIntro = false
+                                }
+                            }
+                        }
                 }
-                .onAppear {
-                    // Complete initialization here after view has appeared
-                    setupManager.completeSetup()
-                    
-                    // Check if the user has already acknowledged the legal terms
-                    let hasAcknowledged = UserDefaults.standard.bool(forKey: "hasAcknowledgedLegalTerms")
-                    showingLegalTerms = !hasAcknowledged
-                }
+            }
+            .sheet(isPresented: $showingLegalTerms) {
+                LegalSectionView()
+                    .interactiveDismissDisabled()
+            }
+            .onAppear {
+                // Complete initialization here after view has appeared
+                setupManager.completeSetup()
+                
+                // Check if the user has already acknowledged the legal terms
+                let hasAcknowledged = UserDefaults.standard.bool(forKey: "hasAcknowledgedLegalTerms")
+                showingLegalTerms = !hasAcknowledged
+            }
         }
-        .modelContainer(sharedModelContainer)
         .onChange(of: scenePhase) { oldPhase, newPhase in
             setupManager.handleScenePhaseChange(from: oldPhase, to: newPhase)
         }

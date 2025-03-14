@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct NoiseGridSelectionView: View {
-    @EnvironmentObject var audioManager: AudioManager
-    @Binding var selectedNoise: AudioManager.NoiseType
+    @EnvironmentObject var audioManager: AudioManagerImpl
+    @Binding var selectedNoise: AudioManagerImpl.NoiseType
     
     let columns = [
         GridItem(.flexible()),
@@ -18,7 +18,7 @@ struct NoiseGridSelectionView: View {
     
     var body: some View {
         LazyVGrid(columns: columns, spacing: 20) {
-            ForEach(AudioManager.NoiseType.allCases) { noiseType in
+            ForEach(AudioManagerImpl.NoiseType.allCases) { noiseType in
                 NoiseTypeCard(
                     noiseType: noiseType,
                     isSelected: selectedNoise == noiseType,
@@ -36,7 +36,7 @@ struct NoiseGridSelectionView: View {
 }
 
 struct NoiseTypeCard: View {
-    let noiseType: AudioManager.NoiseType
+    let noiseType: AudioManagerImpl.NoiseType
     let isSelected: Bool
     let isPlaying: Bool
     let onSelect: () -> Void
@@ -59,10 +59,10 @@ struct NoiseTypeCard: View {
                             // Use the new NoiseTypeVisualizer
                             NoiseTypeVisualizer(noiseType: noiseType, isPlaying: isPlaying || isSelected)
                                 .frame(height: 60)
-                                .padding(.horizontal, 10)
+                                .padding([.leading, .trailing], 10)
                         }
                         .frame(height: 60)
-                        .padding(.horizontal, 5)
+                        .padding([.leading, .trailing], 5)
                         .padding(.top, 5)
                         
                         Text(noiseType.rawValue)
@@ -83,7 +83,7 @@ struct NoiseTypeCard: View {
         .buttonStyle(PlainButtonStyle())
     }
     
-    private func shortDescription(for noiseType: AudioManager.NoiseType) -> String {
+    private func shortDescription(for noiseType: AudioManagerImpl.NoiseType) -> String {
         switch noiseType {
         case .white:
             return "Equal across all frequencies, masks sounds"
@@ -106,6 +106,6 @@ struct NoiseTypeCard: View {
 }
 
 #Preview {
-    NoiseGridSelectionView(selectedNoise: .constant(.white))
-        .environmentObject(AudioManager())
+    NoiseGridSelectionView(selectedNoise: Binding.constant(AudioManagerImpl.NoiseType.white))
+        .environmentObject(AudioManagerImpl())
 } 

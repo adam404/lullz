@@ -49,6 +49,8 @@ struct LegacyAdBannerView: UIViewRepresentable {
 
 // Fallback placeholder ad view for development/testing
 struct PlaceholderAdView: View {
+    @State private var showSubscription = false
+    
     var body: some View {
         VStack {
             Text("Advertisement")
@@ -59,39 +61,36 @@ struct PlaceholderAdView: View {
                 .fill(Color.secondary.opacity(0.2))
                 .frame(height: 50)
                 .overlay(
-                    Text("Lullz Premium - Upgrade for ad-free experience")
+                    HStack {
+                        Text("Lullz Premium - Upgrade for ad-free experience")
+                            .font(.caption)
+                            .foregroundColor(.primary)
+                        
+                        Spacer()
+                        
+                        Button("Upgrade") {
+                            showSubscription = true
+                        }
                         .font(.caption)
-                        .foregroundColor(.primary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color.accentColor)
+                        .foregroundColor(.white)
+                        .cornerRadius(5)
+                    }
+                    .padding(.horizontal)
                 )
         }
         .frame(height: 70)
         .padding(.horizontal)
-    }
-}
-
-// Renamed to LegacyAdView to avoid conflicts with our new implementation
-struct LegacyAdView: View {
-    @Environment(\.colorScheme) var colorScheme
-    @AppStorage("showAdsEnabled") private var showAdsEnabled = true
-    @AppStorage("useRealAds") private var useRealAds = false
-    
-    var body: some View {
-        if !showAdsEnabled {
-            EmptyView()
-        } else if useRealAds {
-            LegacyAdBannerView()
-                .frame(height: 70)
-        } else {
-            PlaceholderAdView()
-                .background(colorScheme == .dark ? Color.black.opacity(0.2) : Color.white.opacity(0.2))
-                .cornerRadius(8)
+        .sheet(isPresented: $showSubscription) {
+            SubscriptionView()
         }
     }
 }
 
 #Preview {
     VStack {
-        // Use our new AdView for preview
         AdView()
         Spacer()
         PlaceholderAdView()

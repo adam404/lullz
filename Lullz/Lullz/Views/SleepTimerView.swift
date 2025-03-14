@@ -8,11 +8,14 @@
 import SwiftUI
 
 struct SleepTimerView: View {
-    @EnvironmentObject var audioManager: AudioManager
+    @EnvironmentObject var audioManager: AudioManagerImpl
     @Environment(\.dismiss) private var dismiss
     @State private var selectedDuration: TimeInterval
     @State private var timeRemaining: TimeInterval?
     @State private var timer: Timer?
+    @State private var isTimerActive: Bool = false
+    @State private var timerStartTime: Date?
+    @State private var timerEndTime: Date?
     
     // Preset durations
     private let durations: [TimeInterval] = [
@@ -29,8 +32,8 @@ struct SleepTimerView: View {
     ]
     
     init() {
-        // Initialize with the audio manager's current duration setting
-        _selectedDuration = State(initialValue: AudioManager().sleepTimerDuration)
+        // Use a default value
+        _selectedDuration = State(initialValue: 30 * 60) // 30 minutes
         _timeRemaining = State(initialValue: nil)
     }
     
@@ -38,17 +41,16 @@ struct SleepTimerView: View {
         NavigationView {
             VStack(spacing: 30) {
                 // Display active timer or duration selection
-                if let remaining = timeRemaining, audioManager.sleepTimerActive {
+                if let remaining = timeRemaining, isTimerActive {
                     activeTimerView(remaining: remaining)
                 } else {
                     durationSelectionView()
                 }
                 
                 // Timer controls
-                if audioManager.sleepTimerActive {
+                if isTimerActive {
                     Button(action: {
-                        audioManager.cancelSleepTimer()
-                        timeRemaining = nil
+                        cancelSleepTimer()
                     }) {
                         Text("Cancel Timer")
                             .fontWeight(.semibold)
@@ -60,10 +62,7 @@ struct SleepTimerView: View {
                     }
                 } else {
                     Button(action: {
-                        audioManager.sleepTimerDuration = selectedDuration
-                        audioManager.startSleepTimer()
-                        updateTimeRemaining()
-                        startUpdateTimer()
+                        startSleepTimer(duration: selectedDuration)
                     }) {
                         Text("Start Timer")
                             .fontWeight(.semibold)
@@ -97,10 +96,10 @@ struct SleepTimerView: View {
             .navigationBarItems(trailing: Button("Done") { dismiss() })
             .onAppear {
                 // Check if timer is already active
-                updateTimeRemaining()
-                startUpdateTimer()
+                checkExistingTimer()
             }
             .onDisappear {
+                // Keep the timer running but stop our local updates
                 timer?.invalidate()
             }
         }
@@ -108,26 +107,28 @@ struct SleepTimerView: View {
     
     private func activeTimerView(remaining: TimeInterval) -> some View {
         VStack(spacing: 20) {
-            Text("Timer Active")
+            Text("Sleep Timer Active")
                 .font(.headline)
-                .foregroundColor(.accentColor)
             
-            Text(formatTimeInterval(remaining))
-                .font(.system(size: 48, weight: .semibold, design: .rounded))
-                .foregroundColor(.primary)
-                .monospacedDigit()
+            VStack {
+                Text(formatTimeInterval(remaining))
+                    .font(.system(size: 60, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                
+                if let endTime = timerEndTime {
+                    Text("Music will stop at \(formatTime(endTime))")
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding(.vertical, 20)
             
-            Text("Remaining")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-            
-            Text("Sound will stop playing at \(formatTime(Date().addingTimeInterval(remaining)))")
+            Text("The audio will automatically stop when the timer reaches zero.")
                 .font(.caption)
                 .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
         }
         .padding()
-        .frame(maxWidth: .infinity)
-        .background(Color.secondary.opacity(0.1))
+        .background(Color(.secondarySystemBackground))
         .cornerRadius(15)
     }
     
@@ -136,35 +137,95 @@ struct SleepTimerView: View {
             Text("Select Duration")
                 .font(.headline)
             
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 15) {
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ], spacing: 12) {
                 ForEach(durations, id: \.self) { duration in
-                    Button {
+                    Button(action: {
                         selectedDuration = duration
-                    } label: {
+                    }) {
                         Text(formatTimeInterval(duration))
+                            .padding()
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(duration == selectedDuration 
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(duration == selectedDuration 
                                           ? Color.accentColor 
                                           : Color.secondary.opacity(0.2))
-                            )
-                            .foregroundColor(duration == selectedDuration ? .white : .primary)
-                    }
+                    )
+                    .foregroundColor(duration == selectedDuration ? .white : .primary)
                 }
             }
         }
     }
     
+    // Sleep timer functionality
+    private func startSleepTimer(duration: TimeInterval) {
+        let startTime = Date()
+        let endTime = startTime.addingTimeInterval(duration)
+        
+        timerStartTime = startTime
+        timerEndTime = endTime
+        isTimerActive = true
+        
+        // Calculate initial remaining time
+        updateTimeRemaining()
+        
+        // Start the timer
+        startUpdateTimer()
+        
+        // Schedule the actual stop action
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+            if self.isTimerActive {
+                self.audioManager.stopSound()
+                self.isTimerActive = false
+                self.timeRemaining = nil
+                self.timer?.invalidate()
+                self.timer = nil
+            }
+        }
+    }
+    
+    private func cancelSleepTimer() {
+        isTimerActive = false
+        timeRemaining = nil
+        timerStartTime = nil
+        timerEndTime = nil
+        timer?.invalidate()
+        timer = nil
+    }
+    
+    private func checkExistingTimer() {
+        // Since we're not using AudioManager's built-in sleep timer,
+        // we just need to check our local state
+        if isTimerActive {
+            updateTimeRemaining()
+            startUpdateTimer()
+        }
+    }
+    
     private func updateTimeRemaining() {
-        timeRemaining = audioManager.timeRemainingOnSleepTimer()
+        if let endTime = timerEndTime, isTimerActive {
+            let now = Date()
+            let remaining = endTime.timeIntervalSince(now)
+            
+            if remaining > 0 {
+                timeRemaining = remaining
+            } else {
+                cancelSleepTimer()
+            }
+        } else {
+            timeRemaining = nil
+        }
     }
     
     private func startUpdateTimer() {
         timer?.invalidate()
         
-        if audioManager.sleepTimerActive {
+        if isTimerActive {
             timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
                 updateTimeRemaining()
             }
@@ -192,6 +253,6 @@ struct SleepTimerView: View {
 struct SleepTimerView_Previews: PreviewProvider {
     static var previews: some View {
         SleepTimerView()
-            .environmentObject(AudioManager())
+            .environmentObject(AudioManagerImpl())
     }
 } 

@@ -9,7 +9,7 @@ import SwiftUI
 import AVFoundation
 
 struct BreathingExerciseView: View {
-    @EnvironmentObject var audioManager: AudioManager
+    @EnvironmentObject var audioManager: AudioManagerImpl
     @Environment(\.dismiss) private var dismiss
     let pattern: BreathingPattern
     
@@ -20,6 +20,8 @@ struct BreathingExerciseView: View {
     @State private var targetCycles: Int = 5
     @State private var timer: Timer?
     @State private var showingSettings = false
+    // Add a proper loading state instead of forcing updates
+    @State private var isInitialized: Bool = false
     
     // Add a local mutable copy of the pattern's useAudioCues property
     @State private var localUseAudioCues: Bool = true
@@ -115,26 +117,33 @@ struct BreathingExerciseView: View {
                 }
                 .padding()
                 
-                // Main breathing circle
-                BreathingCircleView(
-                    phase: currentStep.phase,
-                    progress: progress,
-                    color: Color(hex: pattern.accentColor) ?? .blue
-                )
-                .frame(width: min(geometry.size.width, geometry.size.height) * 0.7,
-                       height: min(geometry.size.width, geometry.size.height) * 0.7)
-                .padding()
-                
-                // Current instruction
-                Text(currentStep.phase.instruction)
-                    .font(.title3)
-                    .fontWeight(.medium)
-                    .padding(.bottom, 5)
-                
-                // Timer display
-                Text(String(format: "%.1f", currentStep.durationSeconds * (1 - progress)))
-                    .font(.system(size: 36, design: .monospaced))
-                    .fontWeight(.bold)
+                if isInitialized {
+                    // Main breathing circle - only show when initialized
+                    BreathingCircleView(
+                        phase: currentStep.phase,
+                        progress: progress,
+                        color: Color(hex: pattern.accentColor) ?? .blue
+                    )
+                    .frame(width: min(geometry.size.width, geometry.size.height) * 0.7,
+                           height: min(geometry.size.width, geometry.size.height) * 0.7)
+                    .padding()
+                    
+                    // Current instruction
+                    Text(currentStep.phase.instruction)
+                        .font(.title3)
+                        .fontWeight(.medium)
+                        .padding(.bottom, 5)
+                    
+                    // Timer display
+                    Text(String(format: "%.1f", currentStep.durationSeconds * (1 - progress)))
+                        .font(.system(size: 36, design: .monospaced))
+                        .fontWeight(.bold)
+                } else {
+                    // Show a loading indicator while initializing
+                    ProgressView()
+                        .scaleEffect(1.5)
+                        .padding()
+                }
                 
                 // Instructions - fix the property name
                 Text(pattern.patternDescription)
@@ -149,19 +158,9 @@ struct BreathingExerciseView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(.systemBackground))
             .task {
-                // Use task instead of onAppear for better timing
+                // Use task for proper async initialization
                 print("BreathingExerciseView task started with pattern: \(pattern.name)")
-                setupAudio()
-                // Initialize immediately to the first step
-                currentStepIndex = 0
-                progress = 0.01 // Start with a tiny bit of progress to make the animation visible
-                
-                // Add a small delay and then update progress to force redraw
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    print("Forcing UI update for BreathingExerciseView")
-                    // Toggle a tiny bit of progress to force a UI update
-                    progress = 0.02
-                }
+                await initializeExercise()
             }
             .onDisappear {
                 pauseExercise()
@@ -170,6 +169,24 @@ struct BreathingExerciseView: View {
             .sheet(isPresented: $showingSettings) {
                 BreathingSettingsView(pattern: pattern, targetCycles: $targetCycles)
             }
+        }
+    }
+    
+    // Create a proper async initialization function
+    private func initializeExercise() async {
+        // Setup the audio first
+        setupAudio()
+        
+        // Initialize to the first step
+        currentStepIndex = 0
+        progress = 0.0
+        
+        // Use a small delay to ensure everything is properly loaded
+        try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
+        
+        // Mark as initialized to show the UI
+        await MainActor.run {
+            isInitialized = true
         }
     }
     
@@ -220,9 +237,9 @@ struct BreathingExerciseView: View {
         }
         
         // Set up background noise if desired
-        if let noiseType = pattern.backgroundNoiseType, let type = AudioManager.NoiseType(rawValue: noiseType) {
+        if let noiseType = pattern.backgroundNoiseType, let type = AudioManagerImpl.NoiseType(rawValue: noiseType) {
             audioManager.currentNoiseType = type
-            audioManager.volume = pattern.backgroundNoiseVolume
+            audioManager.volume = Double(pattern.backgroundNoiseVolume)
             
             if !audioManager.isPlaying {
                 audioManager.playNoise()
@@ -348,5 +365,5 @@ extension Color {
     )
     
     return BreathingExerciseView(pattern: samplePattern)
-        .environmentObject(AudioManager())
+        .environmentObject(AudioManagerImpl())
 } 
