@@ -1,6 +1,6 @@
 ---
-description: iOS Application Development Best Practice
-globs: 
+description: iOS Application Development Best Practiceswift
+globs: *.*
 alwaysApply: false
 ---
 
