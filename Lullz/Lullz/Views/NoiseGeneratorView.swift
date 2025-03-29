@@ -6,9 +6,10 @@
 //
 
 import SwiftUI
+import AVFoundation
 
 struct NoiseGeneratorView: View {
-    @EnvironmentObject var audioManager: AudioManagerImpl
+    @EnvironmentObject private var audioManager: AudioManagerImpl
     @State private var showingSaveProfile = false
     @State private var profileName = ""
     @State private var showingSleepTimer = false
@@ -66,20 +67,16 @@ struct NoiseGeneratorView: View {
                     let hasAcknowledged = UserDefaults.standard.bool(forKey: "hasAcknowledgedHealthDisclaimer")
                     showingHealthDisclaimer = !hasAcknowledged
                     
-                    // Set selected noise to match the current audio manager setting
+                    // Sync UI state with audio manager state
                     selectedNoise = audioManager.currentNoiseType
+                    volume = audioManager.volume
+                    isMuted = audioManager.volume <= 0
                     
                     // Set sound category to noise
                     audioManager.currentSoundCategory = .noise
                     
-                    // Don't auto-play on boot
                     // Save current volume setting in case we need it later
                     previousVolume = audioManager.volume > 0 ? audioManager.volume : 0.5
-                    
-                    // Initialize with current state if applicable
-                    if audioManager.currentSoundCategory == .noise && audioManager.isPlaying {
-                        volume = audioManager.volume
-                    }
                 }
         }
     }
@@ -159,11 +156,13 @@ struct NoiseGeneratorView: View {
                 
                 // Volume indicator
                 if audioManager.volume > 0 {
-                    HStack(spacing: 4) {
-                        ForEach(0..<Int(audioManager.volume * 5), id: \.self) { _ in
-                            RoundedRectangle(cornerRadius: 2)
-                                .frame(width: 4, height: 16)
-                                .foregroundColor(.white.opacity(0.8))
+                    HStack {
+                        // Volume indicator bars
+                        ForEach(0..<5, id: \.self) { index in
+                            Rectangle()
+                                .fill(index < Int(audioManager.volume * 5) ? Color.accentColor : Color.gray.opacity(0.3))
+                                .frame(width: 4, height: 8 + CGFloat(index) * 3)
+                                .cornerRadius(2)
                         }
                     }
                     .padding(8)
@@ -179,17 +178,13 @@ struct NoiseGeneratorView: View {
                     Image(systemName: "speaker.fill")
                         .foregroundColor(.secondary)
                     
-                    Slider(value: $volume, in: 0...1) { editing in
-                        if !editing && isMuted {
-                            isMuted = false
+                    Slider(value: $audioManager.volume, in: 0...1, onEditingChanged: { editing in
+                        if !editing {
+                            // Provide haptic feedback when user finishes adjusting volume
+                            let generator = UIImpactFeedbackGenerator(style: .light)
+                            generator.impactOccurred()
                         }
-                        
-                        // Ensure audio is not accidentally muted when changing category
-                        if volume > 0 && !audioManager.isPlaying {
-                            // User has set volume above zero, but audio is not playing
-                            // Don't auto-start here, just ensure volume state is saved
-                        }
-                    }
+                    })
                     .accessibilityIdentifier("volumeControl")
                     .tint(Color.accentColor)
                     
@@ -428,6 +423,7 @@ struct ControlSliderView: View {
 struct NoiseInfoView: View {
     let noiseType: AudioManagerImpl.NoiseType
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var audioManager: AudioManagerImpl
     @State private var isAnimating = true
     
     var body: some View {
@@ -439,26 +435,18 @@ struct NoiseInfoView: View {
                         RoundedRectangle(cornerRadius: 16)
                             .fill(Color.black.opacity(0.9))
                         
-                        NoiseTypeVisualizer(noiseType: noiseType, isPlaying: isAnimating)
+                        let visualizer = audioManager.visualizer ?? SoundVisualizer(audioEngine: AVAudioEngine())
+                        
+                        NoiseTypeVisualizer(
+                            noiseType: noiseType,
+                            isPlaying: audioManager.isPlaying && audioManager.currentNoiseType == noiseType,
+                            visualizer: visualizer
+                        )
+                            .environmentObject(audioManager) // Pass the environment object explicitly
                             .padding()
                     }
                     .frame(height: 150)
                     .padding(.bottom)
-                    
-                    Group {
-                        Text(noiseType.rawValue + " Noise")
-                            .font(.title)
-                            .bold()
-                        
-                        Text(noiseType.description)
-                            .padding(.vertical, 5)
-                        
-                        Text("Scientific Basis")
-                            .font(.headline)
-                            .padding(.top)
-                        
-                        Text(noiseType.scientificBasis)
-                    }
                     
                     Spacer()
                 }

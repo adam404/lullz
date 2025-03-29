@@ -27,7 +27,7 @@ class AudioManagerImpl: AudioManagerProtocol {
         
         var id: String { self.rawValue }
         
-        var description: String {
+        var noiseDescription: String {
             switch self {
             case .white:
                 return "Equal power across all frequencies, helpful for masking environmental sounds."
@@ -48,7 +48,7 @@ class AudioManagerImpl: AudioManagerProtocol {
             }
         }
         
-        var scientificBasis: String {
+        var scientificBasisText: String {
             switch self {
             case .white:
                 return "Named after white light, which contains all visible wavelengths. Used in acoustic testing and has equal energy per frequency band."

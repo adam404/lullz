@@ -359,6 +359,8 @@ struct LullzApp: App {
         }
     }
 
+       
+
     init() {
         // Initialize the setup manager with our shared audio manager instance
         _setupManager = StateObject(wrappedValue: AppSetupManager(
@@ -372,7 +374,6 @@ struct LullzApp: App {
         WindowGroup {
             ZStack {
                 MainTabView()
-                    .withFloatingVolumeControl()
                     .environmentObject(audioManager)
                     .environmentObject(setupManager)
                     .modelContainer(sharedModelContainer)

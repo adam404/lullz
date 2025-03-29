@@ -84,7 +84,7 @@ struct ProfilesView: View {
 }
 
 struct ProfileDetailView: View {
-    @EnvironmentObject var audioManager: AudioManager
+    @EnvironmentObject private var audioManager: AudioManagerImpl
     let profile: NoiseProfile
 
     var body: some View {

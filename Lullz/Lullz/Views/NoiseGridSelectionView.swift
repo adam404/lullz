@@ -6,10 +6,11 @@
 //
 
 import SwiftUI
+import AVFoundation
 
 struct NoiseGridSelectionView: View {
-    @EnvironmentObject var audioManager: AudioManagerImpl
     @Binding var selectedNoise: AudioManagerImpl.NoiseType
+    @EnvironmentObject private var audioManager: AudioManagerImpl
     
     let columns = [
         GridItem(.flexible()),
@@ -41,6 +42,8 @@ struct NoiseTypeCard: View {
     let isPlaying: Bool
     let onSelect: () -> Void
     
+    @EnvironmentObject private var audioManager: AudioManagerImpl
+    
     var body: some View {
         Button(action: onSelect) {
             VStack {
@@ -56,8 +59,12 @@ struct NoiseTypeCard: View {
                                 .fill(Color.black.opacity(0.8))
                                 .padding(.horizontal, 5)
                             
-                            // Use the new NoiseTypeVisualizer
-                            NoiseTypeVisualizer(noiseType: noiseType, isPlaying: isPlaying || isSelected)
+                            // Use the NoiseTypeVisualizer with proper access to audioManager
+                            NoiseTypeVisualizer(
+                                noiseType: noiseType, 
+                                isPlaying: isPlaying,
+                                visualizer: audioManager.visualizer ?? SoundVisualizer(audioEngine: AVAudioEngine())
+                            )
                                 .frame(height: 60)
                                 .padding([.leading, .trailing], 10)
                         }
@@ -106,6 +113,6 @@ struct NoiseTypeCard: View {
 }
 
 #Preview {
-    NoiseGridSelectionView(selectedNoise: Binding.constant(AudioManagerImpl.NoiseType.white))
-        .environmentObject(AudioManagerImpl())
-} 
+    NoiseGridSelectionView(selectedNoise: .constant(.white))
+        .environmentObject(AudioManagerImpl.shared)
+}

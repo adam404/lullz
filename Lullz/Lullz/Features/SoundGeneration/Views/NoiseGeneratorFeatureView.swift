@@ -81,14 +81,14 @@ struct NoiseGeneratorFeatureView: View {
     
     private var noiseTypeSelector: some View {
         HStack(spacing: 20) {
-            ForEach(NoiseType.allCases) { noiseType in
+            ForEach(AudioManagerImpl.NoiseType.allCases) { noiseType in
                 noiseButton(noiseType)
             }
         }
         .padding(.vertical)
     }
     
-    private func noiseButton(_ type: NoiseType) -> some View {
+    private func noiseButton(_ type: AudioManagerImpl.NoiseType) -> some View {
         Button(action: {
             viewModel.selectNoiseType(type)
         }) {
@@ -98,7 +98,7 @@ struct NoiseGeneratorFeatureView: View {
                         .fill(viewModel.selectedNoiseType == type ? Color.white.opacity(0.2) : Color.clear)
                         .frame(width: 70, height: 70)
                     
-                    Image(systemName: type.icon)
+                    Image(systemName: getIconForNoiseType(type))
                         .font(.system(size: 30))
                         .foregroundColor(.white)
                 }
@@ -113,8 +113,21 @@ struct NoiseGeneratorFeatureView: View {
         .padding(.horizontal, 5)
     }
     
+    private func getIconForNoiseType(_ type: AudioManagerImpl.NoiseType) -> String {
+        switch type {
+        case .white: return "waveform"
+        case .pink: return "waveform.path"
+        case .brown: return "waveform.badge.minus"
+        case .blue: return "waveform.badge.plus"
+        case .violet: return "waveform.badge.exclamationmark"
+        case .grey: return "waveform.path.ecg"
+        case .green: return "leaf"
+        case .black: return "moon.stars"
+        }
+    }
+    
     private var noiseDescription: some View {
-        Text(viewModel.selectedNoiseType.description)
+        Text(viewModel.selectedNoiseType.noiseDescription)
             .font(.body)
             .foregroundColor(.white.opacity(0.8))
             .multilineTextAlignment(.center)

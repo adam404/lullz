@@ -8,39 +8,12 @@
 import SwiftUI
 import Combine
 
-enum NoiseType: String, CaseIterable, Identifiable {
-    case white = "White"
-    case pink = "Pink"
-    case brown = "Brown"
-    
-    var id: String { self.rawValue }
-    
-    var description: String {
-        switch self {
-        case .white:
-            return "Full spectrum noise, equal energy across all frequencies. Best for masking variable sounds."
-        case .pink:
-            return "Lower energy in higher frequencies. Sounds more natural and is good for concentration."
-        case .brown:
-            return "Even lower energy in higher frequencies. Deep, soothing sound like ocean waves."
-        }
-    }
-    
-    var icon: String {
-        switch self {
-        case .white: return "waveform"
-        case .pink: return "waveform.path"
-        case .brown: return "waveform.badge.minus"
-        }
-    }
-}
-
 class NoiseGeneratorViewModel: ObservableObject {
     // MARK: - Properties
     private let audioManager: AudioManagerImpl
     
     // MARK: - Published properties
-    @Published var selectedNoiseType: NoiseType = .white
+    @Published var selectedNoiseType: AudioManagerImpl.NoiseType = .white
     @Published var isMuted: Bool = false
     @Published var volume: Double = 0.5
     @Published var balance: Double = 0.0  // -1.0 (left) to 1.0 (right)
@@ -103,7 +76,7 @@ class NoiseGeneratorViewModel: ObservableObject {
         }
     }
     
-    func selectNoiseType(_ type: NoiseType) {
+    func selectNoiseType(_ type: AudioManagerImpl.NoiseType) {
         selectedNoiseType = type
         if isPlaying {
             playNoise() // Restart with new noise type
@@ -194,27 +167,10 @@ class NoiseGeneratorViewModel: ObservableObject {
     }
     
     private func configureNoiseParameters() {
-        // Set noise type using the currentNoiseType property
-        audioManager.currentNoiseType = convertNoiseType(selectedNoiseType)
+        // Set noise type directly since we're using the same type
+        audioManager.currentNoiseType = selectedNoiseType
         
         // Apply volume settings directly
         audioManager.volume = volume
-        
-        // Handle the missing properties with workarounds if needed
-        // For example, if stereoBalance is not available, we might need to use a different approach
-        // or modify the AudioManagerImpl to include these properties
-    }
-    
-    // Helper method to convert between different NoiseType enums if needed
-    private func convertNoiseType(_ localType: NoiseType) -> AudioManagerImpl.NoiseType {
-        // Map the ViewModels NoiseType to AudioManagerImpl.NoiseType
-        switch localType {
-        case .white:
-            return .white
-        case .pink:
-            return .pink
-        case .brown:
-            return .brown
-        }
     }
 } 
